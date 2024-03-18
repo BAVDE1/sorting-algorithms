@@ -1,5 +1,5 @@
 import pygame as pg
-
+from button import BTNOperation, Button, ButtonOutlined
 from constants import *
 
 
@@ -13,6 +13,8 @@ class Game:
         self.canvas_screen = pg.surface.Surface(pg.Vector2(GameValues.SCREEN_WIDTH, GameValues.SCREEN_HEIGHT))
         self.final_screen = pg.display.get_surface()
 
+        self.buttons = [Button("yahaha", pg.Vector2(0, 0), BTNOperation("a", Button))]
+
     def events(self):
         for event in pg.event.get():
             # keydown input
@@ -23,11 +25,21 @@ class Game:
             if event.type == pg.QUIT or self.keys[pg.K_ESCAPE]:
                 self.running = False
 
+            # mouse
+            if event.type == pg.MOUSEBUTTONDOWN and pg.mouse.get_pressed()[0]:
+                for button in self.buttons:
+                    if button.is_mouse_in_bounds():
+                        button.perform_operation()
+
     def render(self):
         fill_col = (0, 5, 5)
         self.final_screen.fill(fill_col)
         self.canvas_screen.fill(fill_col)
 
+        for button in self.buttons:
+            button.render(self.canvas_screen)
+
+        # final
         scaled = pg.transform.scale(self.canvas_screen, pg.Vector2(GameValues.SCREEN_WIDTH * GameValues.RES_MUL, GameValues.SCREEN_HEIGHT * GameValues.RES_MUL))
         self.final_screen.blit(scaled, pg.Vector2(0, 0))
 
