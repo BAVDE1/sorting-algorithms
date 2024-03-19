@@ -61,7 +61,8 @@ class Button:
 
     def is_mouse_in_bounds(self):
         mp = pg.Vector2(pg.mouse.get_pos()) / GameValues.RES_MUL
-        return self.bounds.x < mp.x < self.bounds.width and self.bounds.y < mp.y < self.bounds.height
+        return (self.bounds.x < mp.x < self.bounds.x + self.bounds.width
+                and self.bounds.y < mp.y < self.bounds.y + self.bounds.height)
 
     def perform_operation(self):
         if self.is_mouse_in_bounds():

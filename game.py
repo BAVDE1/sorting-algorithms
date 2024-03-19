@@ -1,10 +1,21 @@
 import pygame as pg
 from button import BTNOperation, Button, ButtonToggle
+from sorter import Sorter
 from constants import *
 
 
 def test():
     print("clicked")
+
+
+def get_buttons(game, sorter: Sorter):
+    start_btn = Button("> Start <", pg.Vector2(GameValues.SCREEN_WIDTH - 140, GameValues.SCREEN_HEIGHT - 70), BTNOperation("a", test), text_col=(100, 255, 100), outline=2)
+    return [start_btn]
+
+
+def get_sorter() -> Sorter:
+    s = Sorter(pg.Vector2(225, 150))
+    return s
 
 
 class Game:
@@ -14,12 +25,11 @@ class Game:
         self.clock = pg.time.Clock()
         self.keys = pg.key.get_pressed()
 
-        self.canvas_screen = pg.surface.Surface(pg.Vector2(GameValues.SCREEN_WIDTH, GameValues.SCREEN_HEIGHT))
+        self.canvas_screen = pg.Surface(pg.Vector2(GameValues.SCREEN_WIDTH, GameValues.SCREEN_HEIGHT))
         self.final_screen = pg.display.get_surface()
 
-        self.buttons = [
-            Button("> Start <", pg.Vector2(0, 0), BTNOperation("a", test), text_col=(100, 255, 100), outline=2)
-        ]
+        self.sorter = get_sorter()
+        self.buttons = get_buttons(self, self.sorter)
 
     def events(self):
         for event in pg.event.get():
@@ -38,12 +48,13 @@ class Game:
                         button.perform_operation()
 
     def render(self):
-        fill_col = (0, 5, 5)
-        self.final_screen.fill(fill_col)
-        self.canvas_screen.fill(fill_col)
+        self.final_screen.fill(GameValues.BG_COL)
+        self.canvas_screen.fill(GameValues.BG_COL)
 
         for button in self.buttons:
             button.render(self.canvas_screen)
+
+        self.sorter.render(self.canvas_screen)
 
         # final
         scaled = pg.transform.scale(self.canvas_screen, pg.Vector2(GameValues.SCREEN_WIDTH * GameValues.RES_MUL, GameValues.SCREEN_HEIGHT * GameValues.RES_MUL))
@@ -58,4 +69,4 @@ class Game:
 
             self.clock.tick(self.fps)
 
-            pg.display.set_caption("{} - fps: {:.2f}".format("basic game", self.clock.get_fps()))
+            pg.display.set_caption("{} - fps: {:.2f}".format("sort stuff idk", self.clock.get_fps()))
