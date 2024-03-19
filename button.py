@@ -2,6 +2,10 @@ import pygame as pg
 from constants import *
 
 
+def get_middle(pos: int, width_1, width_2) -> int:
+    return pos + ((width_1 / 2) - (width_2 / 2))
+
+
 class BTNOperation:
     def __init__(self, function, *args, **kwargs):
         if not callable(function):
@@ -98,17 +102,22 @@ class ButtonToggle(Button):
 
 class Input:
     def __init__(self, text, pos: pg.Vector2, operation: InputOperation,
-                 text_size=20, text_col=(255, 255, 0), max_value=10, int_only=False):
+                 text_size=20, text_col=(255, 255, 0), max_value=3, int_only=False, margin=5, default_val=""):
         self.font = pg.font.SysFont('Times New Roman', text_size)
         self.display_text = self.font.render(text, True, text_col)
 
+        self.text_col = text_col
+        self.margin = margin
         self.operation = operation
-        self.selected = False
-        self.value = ""
+        self.selected = True
+        self.value = default_val
         self.max_value = max_value
         self.int_only = int_only
 
-        self.bounds = pg.Rect(pos.x, pos.y, 200, 200)
+        self.box_bounds = pg.Rect(pos.x, text_size + pos.y + margin, (text_size * max_value) * 0.8, text_size + margin)
+        self.text_pos = pg.Vector2(get_middle(pos.x, self.box_bounds.width, self.display_text.get_width()), pos.y)
+
+        self.de_select()
 
     def key_input(self, key):
         if self.selected:
@@ -117,18 +126,23 @@ class Input:
                 return
             elif key == pg.K_BACKSPACE:
                 self.value = self.value[:-1]
-                print(self.value)
                 return
             # add to value
             if len(self.value) < self.max_value:
-                self.value += pg.key.name(key)
+                char = pg.key.name(key)
+                if self.int_only and not char.isdigit():
+                    return
+                self.value += char
                 return
             self.de_select()
 
     def de_select(self):
-        print(self.value)
-        self.selected = False
-        self.operation.perform_operation(int(self.value) if self.int_only else self.value)
+        if self.selected:
+            print(self.value)
+            self.selected = False
+            if self.int_only:
+                self.value = str(min(GameValues.MAX_ITEMS, max(GameValues.MIN_ITEMS, int(self.value if self.value else 0))))
+            self.operation.perform_operation(int(self.value) if self.int_only else self.value)
 
     def mouse_down(self):
         if self.is_mouse_in_bounds():
@@ -137,13 +151,22 @@ class Input:
         self.de_select()
 
     def render(self, screen: pg.Surface):
+        pg.draw.rect(screen, (50, 50, 50), self.box_bounds)
         self.mouse_hover(screen)
+
+        if self.selected:
+            pg.draw.rect(screen, (255, 255, 255), self.box_bounds, 2)
+
+        # text
+        screen.blit(self.display_text, self.text_pos)
+        value_text = self.font.render(self.value, True, self.text_col)
+        screen.blit(value_text, pg.Vector2(get_middle(self.box_bounds.x, self.box_bounds.width, value_text.get_width()), self.box_bounds.y))
 
     def mouse_hover(self, screen: pg.Surface):
         if self.is_mouse_in_bounds():
-            pg.draw.rect(screen, (50, 50, 50), self.bounds)
+            pg.draw.rect(screen, (100, 100, 100), self.box_bounds)
 
     def is_mouse_in_bounds(self):
         mp = pg.Vector2(pg.mouse.get_pos()) / GameValues.RES_MUL
-        return (self.bounds.x < mp.x < self.bounds.x + self.bounds.width
-                and self.bounds.y < mp.y < self.bounds.y + self.bounds.height)
+        return (self.box_bounds.x < mp.x < self.box_bounds.x + self.box_bounds.width
+                and self.box_bounds.y < mp.y < self.box_bounds.y + self.box_bounds.height)

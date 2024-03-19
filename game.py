@@ -10,12 +10,12 @@ def test(a):
 
 def get_buttons(game, sorter: Sorter):
     start = Button("> Start <", pg.Vector2(GameValues.SCREEN_WIDTH - 140, GameValues.SCREEN_HEIGHT - 70), BTNOperation(test), text_col=(100, 255, 100), outline=2)
-    re_gen = Button("Re-Gen", pg.Vector2(GameValues.SCREEN_HEIGHT - 230, GameValues.SCREEN_HEIGHT - 70), BTNOperation(sorter.generate_items), text_size=20, outline=2)
+    re_gen = Button("Re-gen", pg.Vector2(GameValues.SCREEN_HEIGHT - 230, GameValues.SCREEN_HEIGHT - 70), BTNOperation(sorter.generate_items), text_size=20, outline=2)
     return [start, re_gen]
 
 
 def get_inputs(game, sorter: Sorter):
-    items_num = Input("Num of items", pg.Vector2(0, 0), InputOperation(test))
+    items_num = Input("Num of items", pg.Vector2(300, 20), InputOperation(sorter.change_item_num), int_only=True, default_val='100')
     return [items_num]
 
 

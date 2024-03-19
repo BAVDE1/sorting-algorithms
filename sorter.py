@@ -11,7 +11,7 @@ class Sorter:
         self.outline_rect = pg.Rect(0, 0, self.size.x, self.size.y)
         self.sorter_screen = pg.Surface(self.size)
 
-        self.item_num = 50
+        self.item_num = 1
         self.items = []
 
         self.generate_items()
