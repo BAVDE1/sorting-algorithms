@@ -102,7 +102,8 @@ class ButtonToggle(Button):
 
 class Input:
     def __init__(self, text, pos: pg.Vector2, operation: InputOperation,
-                 text_size=20, text_col=(255, 255, 0), max_value=3, int_only=False, margin=5, default_val=""):
+                 text_size=20, text_col=(255, 255, 0), max_value_chars=3, int_only=False, margin=5,
+                 default_val="", max_val=0, min_val=0):
         self.font = pg.font.SysFont('Times New Roman', text_size)
         self.display_text = self.font.render(text, True, text_col)
 
@@ -111,10 +112,13 @@ class Input:
         self.operation = operation
         self.selected = True
         self.value = default_val
-        self.max_value = max_value
+
+        self.max_value = max_val
+        self.min_value = min_val
+        self.max_value_chars = max_value_chars
         self.int_only = int_only
 
-        self.box_bounds = pg.Rect(pos.x, text_size + pos.y + margin, (text_size * max_value) * 0.8, text_size + margin)
+        self.box_bounds = pg.Rect(pos.x, text_size + pos.y + margin, (text_size * max_value_chars) * 0.8, text_size + margin)
         self.text_pos = pg.Vector2(get_middle(pos.x, self.box_bounds.width, self.display_text.get_width()), pos.y)
 
         self.de_select()
@@ -128,7 +132,7 @@ class Input:
                 self.value = self.value[:-1]
                 return
             # add to value
-            if len(self.value) < self.max_value:
+            if len(self.value) < self.max_value_chars:
                 char = pg.key.name(key)
                 if self.int_only and not char.isdigit():
                     return
@@ -138,10 +142,9 @@ class Input:
 
     def de_select(self):
         if self.selected:
-            print(self.value)
             self.selected = False
             if self.int_only:
-                self.value = str(min(GameValues.MAX_ITEMS, max(GameValues.MIN_ITEMS, int(self.value if self.value else 0))))
+                self.value = str(min(self.max_value, max(self.min_value, int(self.value if self.value else 0))))
             self.operation.perform_operation(int(self.value) if self.int_only else self.value)
 
     def mouse_down(self):

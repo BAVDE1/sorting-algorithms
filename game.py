@@ -11,16 +11,20 @@ def test(a):
 def get_buttons(game, sorter: Sorter):
     start = Button("> Start <", pg.Vector2(GameValues.SCREEN_WIDTH - 140, GameValues.SCREEN_HEIGHT - 70), BTNOperation(test), text_col=(100, 255, 100), outline=2)
     re_gen = Button("Re-gen", pg.Vector2(GameValues.SCREEN_HEIGHT - 230, GameValues.SCREEN_HEIGHT - 70), BTNOperation(sorter.generate_items), text_size=20, outline=2)
-    return [start, re_gen]
+    change_sort = Button("change", pg.Vector2(0, 0), BTNOperation(test), text_size=15)
+    return [start, re_gen, change_sort]
 
 
 def get_inputs(game, sorter: Sorter):
-    items_num = Input("Num of items", pg.Vector2(300, 20), InputOperation(sorter.change_item_num), int_only=True, default_val='100')
-    return [items_num]
+    items_num = Input("Num of items", pg.Vector2(GameValues.SCREEN_WIDTH - 240, 20),
+                      InputOperation(sorter.change_item_num), int_only=True, default_val='100', max_val=GameValues.MAX_ITEMS, min_val=GameValues.MIN_ITEMS)
+    frames_per_op = Input("Frames / Op", pg.Vector2(GameValues.SCREEN_WIDTH - 100, 20),
+                          InputOperation(sorter.change_frames_per_op), int_only=True, default_val='10', max_val=GameValues.MAX_FRAMES, min_val=GameValues.MIN_FRAMES)
+    return [items_num, frames_per_op]
 
 
 def get_sorter() -> Sorter:
-    s = Sorter(pg.Vector2(225, 160))
+    s = Sorter(pg.Vector2(175, 100))
     return s
 
 
