@@ -1,6 +1,10 @@
 import pygame as pg
-from button import BTNOperation, Button, ButtonOutlined
+from button import BTNOperation, Button, ButtonToggle
 from constants import *
+
+
+def test():
+    print("clicked")
 
 
 class Game:
@@ -13,7 +17,9 @@ class Game:
         self.canvas_screen = pg.surface.Surface(pg.Vector2(GameValues.SCREEN_WIDTH, GameValues.SCREEN_HEIGHT))
         self.final_screen = pg.display.get_surface()
 
-        self.buttons = [Button("yahaha", pg.Vector2(0, 0), BTNOperation("a", Button))]
+        self.buttons = [
+            Button("> Start <", pg.Vector2(0, 0), BTNOperation("a", test), text_col=(100, 255, 100), outline=2)
+        ]
 
     def events(self):
         for event in pg.event.get():
