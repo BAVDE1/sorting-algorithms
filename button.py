@@ -2,10 +2,6 @@ import pygame as pg
 from constants import *
 
 
-def get_middle(pos: int, width_1, width_2) -> int:
-    return pos + ((width_1 / 2) - (width_2 / 2))
-
-
 class BTNOperation:
     def __init__(self, function, *args, **kwargs):
         if not callable(function):
@@ -19,7 +15,7 @@ class BTNOperation:
         self.function(*self.args, **self.kwargs)
 
     def __repr__(self):
-        return f"BTNOperation({self.function.__name__})"
+        return f"BTNOperation( {self.function.__name__}({self.args}, {self.kwargs}) )"
 
 
 class InputOperation:
@@ -32,7 +28,7 @@ class InputOperation:
         self.function(value)
 
     def __repr__(self):
-        return f"BTNOperation({self.function.__name__})"
+        return f"InputOperation({self.function.__name__})"
 
 
 class Button:
@@ -48,11 +44,17 @@ class Button:
         self.image = image
         self.outline = outline
         self.outline_col = text_col
+        self.size = pg.Vector2(self.display_text.get_width() + self.margin, self.display_text.get_height() + self.margin)
 
-        self.bounds: pg.Rect = pg.Rect(pos.x + self.margin, pos.y + self.margin, self.display_text.get_width() + self.margin, self.display_text.get_height() + self.margin)
+        self.bounds: pg.Rect = pg.Rect(pos.x + self.margin, pos.y + self.margin, self.size.x, self.size.y)
         if override_size:
             self.bounds.size = override_size
+            self.size = pg.Vector2(self.bounds.size)
 
+        self.text_pos = pg.Vector2(self.bounds.topleft) + pg.Vector2(self.margin * .5)
+
+    def change_pos(self, new_pos: pg.Vector2):
+        self.bounds = pg.Rect(new_pos.x + self.margin, new_pos.y + self.margin, self.size.x, self.size.y)
         self.text_pos = pg.Vector2(self.bounds.topleft) + pg.Vector2(self.margin * .5)
 
     def render(self, screen: pg.Surface):

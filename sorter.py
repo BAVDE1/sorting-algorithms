@@ -14,6 +14,7 @@ class Sorter:
         self.item_num = 1
         self.items = []
 
+        self.method = Methods.BUBBLE
         self.running = False
         self.frames_per_op = 1
 
@@ -29,7 +30,9 @@ class Sorter:
 
     def change_frames_per_op(self, new_val):
         self.frames_per_op = new_val
-        print(self.frames_per_op)
+
+    def change_margin(self, new_val):
+        self.margin = new_val
 
     def render(self, screen: pg.Surface):
         self.sorter_screen.fill(GameValues.BG_COL)
