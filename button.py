@@ -3,9 +3,7 @@ from constants import *
 
 
 class BTNOperation:
-    def __init__(self, btn_type: str, function, *args, **kwargs):
-        self.type = btn_type
-
+    def __init__(self, function, *args, **kwargs):
         if not callable(function):
             raise ValueError("The given function param is not callable.")
 
@@ -17,7 +15,20 @@ class BTNOperation:
         self.function(*self.args, **self.kwargs)
 
     def __repr__(self):
-        return f"BTNOperation({self.type}, {self.function.__name__})"
+        return f"BTNOperation({self.function.__name__})"
+
+
+class InputOperation:
+    def __init__(self, function):
+        if not callable(function):
+            raise ValueError("The given function param is not callable.")
+        self.function = function
+
+    def perform_operation(self, value):
+        self.function(value)
+
+    def __repr__(self):
+        return f"BTNOperation({self.function.__name__})"
 
 
 class Button:
@@ -83,3 +94,56 @@ class ButtonToggle(Button):
         super().render(screen)
         if self.toggled:
             pg.draw.rect(screen, self.toggle_col, self.bounds, 2)
+
+
+class Input:
+    def __init__(self, text, pos: pg.Vector2, operation: InputOperation,
+                 text_size=20, text_col=(255, 255, 0), max_value=10, int_only=False):
+        self.font = pg.font.SysFont('Times New Roman', text_size)
+        self.display_text = self.font.render(text, True, text_col)
+
+        self.operation = operation
+        self.selected = False
+        self.value = ""
+        self.max_value = max_value
+        self.int_only = int_only
+
+        self.bounds = pg.Rect(pos.x, pos.y, 200, 200)
+
+    def key_input(self, key):
+        if self.selected:
+            if key == pg.K_RETURN:
+                self.de_select()
+                return
+            elif key == pg.K_BACKSPACE:
+                self.value = self.value[:-1]
+                print(self.value)
+                return
+            # add to value
+            if len(self.value) < self.max_value:
+                self.value += pg.key.name(key)
+                return
+            self.de_select()
+
+    def de_select(self):
+        print(self.value)
+        self.selected = False
+        self.operation.perform_operation(int(self.value) if self.int_only else self.value)
+
+    def mouse_down(self):
+        if self.is_mouse_in_bounds():
+            self.selected = True
+            return
+        self.de_select()
+
+    def render(self, screen: pg.Surface):
+        self.mouse_hover(screen)
+
+    def mouse_hover(self, screen: pg.Surface):
+        if self.is_mouse_in_bounds():
+            pg.draw.rect(screen, (50, 50, 50), self.bounds)
+
+    def is_mouse_in_bounds(self):
+        mp = pg.Vector2(pg.mouse.get_pos()) / GameValues.RES_MUL
+        return (self.bounds.x < mp.x < self.bounds.x + self.bounds.width
+                and self.bounds.y < mp.y < self.bounds.y + self.bounds.height)
