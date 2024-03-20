@@ -35,7 +35,7 @@ class Button:
     def __init__(self, text, pos: pg.Vector2, operation: BTNOperation,
                  image=None, text_size=30, text_col=(255, 255, 0), text_margin=5,
                  override_size: pg.Vector2 | None = None, outline=0):
-        self.font = pg.font.SysFont('Times New Roman', text_size)
+        self.font = pg.font.SysFont(GameValues.FONT, text_size)
 
         self.margin = text_margin
         self.operation = operation
@@ -106,7 +106,7 @@ class Input:
     def __init__(self, text, pos: pg.Vector2, operation: InputOperation,
                  text_size=20, text_col=(255, 255, 0), max_value_chars=3, int_only=False, margin=5,
                  default_val="", max_val=0, min_val=0):
-        self.font = pg.font.SysFont('Times New Roman', text_size)
+        self.font = pg.font.SysFont(GameValues.FONT, text_size)
         self.display_text = self.font.render(text, True, text_col)
 
         self.text_col = text_col

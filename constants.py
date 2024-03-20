@@ -16,16 +16,19 @@ class Texts:
     ITEMS_NUM = "Num of items"
     FRAMES_OP = "Frames / Op"
     MARGIN = "Margin"
-    SORTING_METHOD = "Sorting Method"
+    SORTING_METHOD = "Sorting Method:"
 
 
 class GameValues:
+    FONT = "Times New Roman"
+
     MIN_ITEMS = 3
     MIN_FRAMES = 1
-    MIN_MARGIN = 5
+    MIN_MARGIN = 10
+
     MAX_ITEMS = 450
     MAX_FRAMES = 100
-    MAX_MARGIN = 200
+    MAX_MARGIN = 100
 
     BG_COL = (0, 5, 5)
 

@@ -4,26 +4,23 @@ from sorter import Sorter
 from constants import *
 
 
-def test(a):
-    print(a)
+def test():
+    pass
 
 
-def get_render_method(pos: pg.Vector2, sorter):
-    change_btn = Button(Texts.CHANGE, pg.Vector2(pos.x, pos.y + 60), BTNOperation(test), text_size=15)
-
-    font_a = pg.font.SysFont('Times New Roman', 20)
-    font_b = pg.font.SysFont('Times New Roman', 30)
+def get_render_method(pos: pg.Vector2, sorter, buttons):
+    font_a = pg.font.SysFont(GameValues.FONT, 20)
+    font_b = pg.font.SysFont(GameValues.FONT, 30)
+    font_b.underline = True
 
     title_text = font_a.render(Texts.SORTING_METHOD, True, (255, 255, 255))
-    title_pos = pg.Vector2(get_middle(pos.x, change_btn.size.x, title_text.get_width()), pos.y)
-
-    method_text = font_b.render(sorter.method, True, (255, 255, 255))
-    method_pos = pg.Vector2(get_middle(pos.x, change_btn.size.x, method_text.get_width()), pos.y + 30)
+    buttons.append(ButtonToggle(Texts.CHANGE, pg.Vector2(pos.x - 12, pos.y + 55), BTNOperation(test), text_size=15, text_margin=10))
 
     def render_method(screen: pg.Surface):
-        screen.blit(title_text, title_pos)
-        screen.blit(method_text, method_pos)
-        change_btn.render(screen)
+        method_text = font_b.render(sorter.sorting_method, True, (255, 255, 255))  # always refreshing
+
+        screen.blit(title_text, pos)
+        screen.blit(method_text, pg.Vector2(pos.x, pos.y + 30))
 
     return render_method
 
@@ -60,7 +57,7 @@ class Game:
 
         self.sorter = get_sorter()
         self.buttons = get_buttons(self, self.sorter)
-        self.render_method = get_render_method(pg.Vector2(70, 20), self.sorter)
+        self.render_method = get_render_method(pg.Vector2(20, 20), self.sorter, self.buttons)
         self.inputs = get_inputs(self, self.sorter)
 
     def events(self):
