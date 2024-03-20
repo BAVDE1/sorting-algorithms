@@ -26,7 +26,7 @@ class GameValues:
     MIN_FRAMES = 1
     MIN_MARGIN = 10
 
-    MAX_ITEMS = 450
+    MAX_ITEMS = 500
     MAX_FRAMES = 100
     MAX_MARGIN = 100
 

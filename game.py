@@ -1,11 +1,11 @@
 import pygame as pg
-from button import BTNOperation, Button, ButtonToggle, Input, InputOperation
+from interactable import BTNOperation, Button, ButtonToggle, Input, InputOperation
 from sorter import Sorter
 from constants import *
 
 
 def test():
-    pass
+    print("test!!~~`1")
 
 
 def get_render_method(pos: pg.Vector2, sorter, buttons):
@@ -26,8 +26,8 @@ def get_render_method(pos: pg.Vector2, sorter, buttons):
 
 
 def get_buttons(game, sorter: Sorter):
-    start = Button(Texts.START, pg.Vector2(GameValues.SCREEN_WIDTH - 140, GameValues.SCREEN_HEIGHT - 70), BTNOperation(test), text_col=(100, 255, 100), outline=2)
-    re_gen = Button(Texts.RE_GEN, pg.Vector2(GameValues.SCREEN_HEIGHT - 230, GameValues.SCREEN_HEIGHT - 70), BTNOperation(sorter.generate_items), text_size=20, outline=2)
+    start = Button(Texts.START, pg.Vector2(GameValues.SCREEN_WIDTH - 140, GameValues.SCREEN_HEIGHT - 70), BTNOperation(test), colour=(100, 255, 100), outline=2)
+    re_gen = Button(Texts.RE_GEN, pg.Vector2(GameValues.SCREEN_HEIGHT - 230, GameValues.SCREEN_HEIGHT - 70), BTNOperation(sorter.generate_items), text_size=20, outline=2, active=False)
     return [start, re_gen]
 
 
@@ -36,13 +36,8 @@ def get_inputs(game, sorter: Sorter):
                       InputOperation(sorter.change_item_num), int_only=True, default_val='100', max_val=GameValues.MAX_ITEMS, min_val=GameValues.MIN_ITEMS)
     frames_per_op = Input(Texts.FRAMES_OP, pg.Vector2(GameValues.SCREEN_WIDTH - 200, 20),
                           InputOperation(sorter.change_frames_per_op), int_only=True, default_val='10', max_val=GameValues.MAX_FRAMES, min_val=GameValues.MIN_FRAMES)
-    margin = Input(Texts.MARGIN, pg.Vector2(GameValues.SCREEN_WIDTH - 80, 20), InputOperation(sorter.change_margin), int_only=True, default_val='50', max_val=GameValues.MAX_MARGIN, min_val=GameValues.MIN_MARGIN)
+    margin = Input(Texts.MARGIN, pg.Vector2(GameValues.SCREEN_WIDTH - 80, 20), InputOperation(sorter.change_margin), int_only=True, default_val='30', max_val=GameValues.MAX_MARGIN, min_val=GameValues.MIN_MARGIN, active=False)
     return [items_num, frames_per_op, margin]
-
-
-def get_sorter() -> Sorter:
-    s = Sorter(pg.Vector2(175, 100))
-    return s
 
 
 class Game:
@@ -55,9 +50,9 @@ class Game:
         self.canvas_screen = pg.Surface(pg.Vector2(GameValues.SCREEN_WIDTH, GameValues.SCREEN_HEIGHT))
         self.final_screen = pg.display.get_surface()
 
-        self.sorter = get_sorter()
+        self.sorter = Sorter(pg.Vector2(175, 100))
         self.buttons = get_buttons(self, self.sorter)
-        self.render_method = get_render_method(pg.Vector2(20, 20), self.sorter, self.buttons)
+        self.render_method = get_render_method(pg.Vector2(10, 10), self.sorter, self.buttons)
         self.inputs = get_inputs(self, self.sorter)
 
     def events(self):
