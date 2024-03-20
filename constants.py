@@ -5,7 +5,7 @@ def get_middle(pos_x, width_1, width_2) -> int:
     return pos_x + ((width_1 / 2) - (width_2 / 2))
 
 
-class Methods:
+class SortingMethods:
     BUBBLE = "Bubble Sort"
 
 

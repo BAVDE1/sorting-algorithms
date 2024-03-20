@@ -16,7 +16,7 @@ class Sorter:
         self.item_num = 1
         self.items = []
 
-        self.sorting_method = Methods.BUBBLE
+        self.sorting_method = SortingMethods.BUBBLE
         self.running = False
         self.frames_per_op = 1
 
@@ -36,7 +36,7 @@ class Sorter:
     def change_margin(self, new_val):
         self.margin = new_val
 
-    def change_method(self, new_method: Methods):
+    def change_method(self, new_method: SortingMethods):
         self.sorting_method = new_method
 
     def render(self, screen: pg.Surface):

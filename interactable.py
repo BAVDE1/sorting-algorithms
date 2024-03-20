@@ -5,19 +5,27 @@ from constants import *
 
 
 class BTNOperation:
-    def __init__(self, function, *args, **kwargs):
-        if not callable(function):
+    def __init__(self, function=None, collection=None, *args, **kwargs):
+        if not function and not collection:
+            raise ValueError("No function of collection given")
+        if function and not callable(function):
             raise ValueError("The given function param is not callable.")
+        if collection and not isinstance(collection, Collection):
+            raise ValueError("The given collection is not of instance Collection")
 
         self.args = args
         self.kwargs = kwargs
         self.function = function
+        self.collection = collection
 
     def perform_operation(self):
-        self.function(*self.args, **self.kwargs)
+        if self.function:
+            self.function(*self.args, **self.kwargs)
+        if self.collection:
+            self.collection.toggle()
 
     def __repr__(self):
-        return f"BTNOperation( {self.function.__name__}({self.args}, {self.kwargs}) )"
+        return f"BTNOperation( {self.function.__name__ if self.function else self.collection}({self.args}, {self.kwargs}) )"
 
 
 class InputOperation:
@@ -31,6 +39,53 @@ class InputOperation:
 
     def __repr__(self):
         return f"InputOperation({self.function.__name__})"
+
+
+class Collection:
+    def __init__(self, pos: pg.Vector2, size: pg.Vector2, buttons=None, toggled=False):
+        if buttons is None:
+            buttons = []
+        self.buttons = [button for button in buttons if isinstance(button, Button)]
+
+        self.pos = pos
+        self.size = size
+        self.coll_screen = pg.Surface(self.size)
+
+        self.toggled = toggled
+
+    def add_buttons(self, new_buttons: list):
+        for new_btn in new_buttons:
+            if isinstance(new_btn, Button):
+                new_btn.hidden = not self.toggled
+                new_btn.change_mouse_offset(self.pos)
+                self.buttons.append(new_btn)
+
+    def remove_button(self, index):
+        """ -1 to remove all buttons """
+        if index in self.buttons:
+            self.buttons.pop(index)
+        if index == -1:
+            self.buttons.clear()
+
+    def toggle(self):
+        self.toggled = not self.toggled
+        for button in self.buttons:
+            button.hidden = not self.toggled
+
+    def mouse_down(self):
+        for button in self.buttons:
+            button.perform_operation()
+
+    def render(self, screen: pg.Surface):
+        self.coll_screen.fill(GameValues.BG_COL)
+        if self.toggled:
+            pg.draw.rect(self.coll_screen, (255, 255, 255), pg.Rect(0, 0, self.size.x, self.size.y), 2)
+            for button in self.buttons:
+                button.render(self.coll_screen)
+        screen.blit(self.coll_screen, self.pos)
+
+    def __repr__(self):
+        return f"Collection({self.pos}, {self.size}, {self.toggled}, {len(self.buttons)})"
 
 
 class Button:
@@ -52,16 +107,24 @@ class Button:
         display_text = self.font.render(text, True, colour)
         self.size = pg.Vector2(display_text.get_width() + self.margin, display_text.get_height() + self.margin)
 
+        self.pos = pos
         self.bounds: pg.Rect = pg.Rect(pos.x + self.margin, pos.y + self.margin, self.size.x, self.size.y)
         if override_size:
             self.bounds.size = override_size
             self.size = pg.Vector2(self.bounds.size)
+        self.mouse_offset = pg.Vector2(0, 0)
 
         self.text_pos = pg.Vector2(self.bounds.topleft) + pg.Vector2(self.margin * .5)
 
     def change_pos(self, new_pos: pg.Vector2):
+        self.pos = new_pos
         self.bounds = pg.Rect(new_pos.x + self.margin, new_pos.y + self.margin, self.size.x, self.size.y)
+        print(self.bounds)
         self.text_pos = pg.Vector2(self.bounds.topleft) + pg.Vector2(self.margin * .5)
+        print(self.text_pos)
+
+    def change_mouse_offset(self, new_off: pg.Vector2):
+        self.mouse_offset = new_off
 
     def get_col(self, given_col=None):
         col = pg.Color(given_col if given_col else self.colour)
@@ -80,6 +143,9 @@ class Button:
 
             screen.blit(self.font.render(self.text, True, self.get_col()), self.text_pos)
 
+    def get_mouse_bounds(self):
+        return pg.Rect(self.bounds.topleft + self.mouse_offset, self.bounds.size)
+
     def get_operation(self):
         if self.is_mouse_in_bounds():
             return self.operation
@@ -90,8 +156,9 @@ class Button:
 
     def is_mouse_in_bounds(self):
         mp = pg.Vector2(pg.mouse.get_pos()) / GameValues.RES_MUL
-        return (self.bounds.x < mp.x < self.bounds.x + self.bounds.width
-                and self.bounds.y < mp.y < self.bounds.y + self.bounds.height)
+        bounds = self.get_mouse_bounds()
+        return (bounds.x < mp.x < bounds.x + bounds.width
+                and bounds.y < mp.y < bounds.y + bounds.height)
 
     def perform_operation(self):
         if self.is_mouse_in_bounds() and not self.hidden and self.active:
@@ -106,12 +173,13 @@ class ButtonToggle(Button):
 
     def perform_operation(self):
         super().perform_operation()
-        self.toggled = not self.toggled
+        if self.is_mouse_in_bounds():
+            self.toggled = not self.toggled
 
     def render(self, screen: pg.Surface):
         super().render(screen)
         if self.toggled:
-            pg.draw.rect(screen, self.toggle_col, self.bounds, 2)
+            pg.draw.rect(screen, self.toggle_col, self.bounds, 1)
 
 
 class Input:
