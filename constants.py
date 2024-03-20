@@ -1,4 +1,3 @@
-import pygame as pg
 
 
 def get_middle(pos_x, width_1, width_2) -> int:
@@ -7,6 +6,7 @@ def get_middle(pos_x, width_1, width_2) -> int:
 
 class SortingMethods:
     BUBBLE = "Bubble Sort"
+    OTHER = "Other Sort"
 
 
 class Texts:
@@ -24,7 +24,7 @@ class GameValues:
 
     MIN_ITEMS = 3
     MIN_FRAMES = 1
-    MIN_MARGIN = 10
+    MIN_MARGIN = 30
 
     MAX_ITEMS = 500
     MAX_FRAMES = 100

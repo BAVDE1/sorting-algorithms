@@ -26,16 +26,16 @@ def get_render_method(pos: pg.Vector2, sorter, buttons, collection):
 
 
 def get_buttons(game, sorter: Sorter):
-    start = Button(Texts.START, pg.Vector2(GameValues.SCREEN_WIDTH - 140, GameValues.SCREEN_HEIGHT - 70), BTNOperation(test), colour=(100, 255, 100), outline=2)
+    start = Button(Texts.START, pg.Vector2(GameValues.SCREEN_WIDTH - 140, GameValues.SCREEN_HEIGHT - 70), BTNOperation(sorter.start_sorting), colour=(100, 255, 100), outline=2)
     re_gen = Button(Texts.RE_GEN, pg.Vector2(GameValues.SCREEN_HEIGHT - 230, GameValues.SCREEN_HEIGHT - 70), BTNOperation(sorter.generate_items), text_size=20, outline=2)
     return [start, re_gen]
 
 
 def get_inputs(game, sorter: Sorter):
     items_num = Input(Texts.ITEMS_NUM, pg.Vector2(GameValues.SCREEN_WIDTH - 340, 20),
-                      InputOperation(function=sorter.change_item_num), int_only=True, default_val='100', max_val=GameValues.MAX_ITEMS, min_val=GameValues.MIN_ITEMS)
+                      InputOperation(function=sorter.change_item_num), int_only=True, default_val='20', max_val=GameValues.MAX_ITEMS, min_val=GameValues.MIN_ITEMS)
     frames_per_op = Input(Texts.FRAMES_OP, pg.Vector2(GameValues.SCREEN_WIDTH - 200, 20),
-                          InputOperation(function=sorter.change_frames_per_op), int_only=True, default_val='10', max_val=GameValues.MAX_FRAMES, min_val=GameValues.MIN_FRAMES)
+                          InputOperation(function=sorter.change_frames_per_op), int_only=True, default_val='1', max_val=GameValues.MAX_FRAMES, min_val=GameValues.MIN_FRAMES)
     margin = Input(Texts.MARGIN, pg.Vector2(GameValues.SCREEN_WIDTH - 80, 20),
                    InputOperation(function=sorter.change_margin), int_only=True, default_val='30', max_val=GameValues.MAX_MARGIN, min_val=GameValues.MIN_MARGIN)
     return [items_num, frames_per_op, margin]
@@ -43,8 +43,10 @@ def get_inputs(game, sorter: Sorter):
 
 def get_collections(game, sorter: Sorter):
     method_collection = Collection(pg.Vector2(6, 110), pg.Vector2(160, 590))
-    method_collection.add_buttons([Button("sort a", pg.Vector2(5, 5), BTNOperation(test), colour=(255, 255, 255), text_size=20),
-                                   Button("sort b", pg.Vector2(5, 35), BTNOperation(test), colour=(255, 255, 255), text_size=20)])
+    method_collection.add_buttons([
+        Button(SortingMethods.BUBBLE, pg.Vector2(5, 5), BTNOperation(function=sorter.change_sorting_method, method=SortingMethods.BUBBLE), colour=(255, 255, 255), text_size=20),
+        Button(SortingMethods.OTHER, pg.Vector2(5, 35), BTNOperation(function=sorter.change_sorting_method, method=SortingMethods.OTHER), colour=(255, 255, 255), text_size=20)
+    ])
     return [method_collection]
 
 
@@ -88,6 +90,9 @@ class Game:
                 for inpt in self.inputs:
                     inpt.mouse_down()
 
+    def update(self):
+        self.sorter.update()
+
     def render(self):
         self.final_screen.fill(GameValues.BG_COL)
         self.canvas_screen.fill(GameValues.BG_COL)
@@ -111,6 +116,7 @@ class Game:
     def main_loop(self):
         while self.running:
             self.events()
+            self.update()
             self.render()
 
             self.clock.tick(self.fps)

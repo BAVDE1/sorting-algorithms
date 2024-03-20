@@ -25,7 +25,7 @@ class BTNOperation:
             self.collection.toggle()
 
     def __repr__(self):
-        return f"BTNOperation( {self.function.__name__ if self.function else self.collection}({self.args}, {self.kwargs}) )"
+        return f"BTNOperation({self.function.__name__ if self.function else self.collection}({self.args}, {self.kwargs}))"
 
 
 class InputOperation:
@@ -42,6 +42,7 @@ class InputOperation:
 
 
 class Collection:
+    """ A collection of buttons within a separate screen that can be toggled on and off """
     def __init__(self, pos: pg.Vector2, size: pg.Vector2, buttons=None, toggled=False):
         if buttons is None:
             buttons = []
@@ -119,9 +120,7 @@ class Button:
     def change_pos(self, new_pos: pg.Vector2):
         self.pos = new_pos
         self.bounds = pg.Rect(new_pos.x + self.margin, new_pos.y + self.margin, self.size.x, self.size.y)
-        print(self.bounds)
         self.text_pos = pg.Vector2(self.bounds.topleft) + pg.Vector2(self.margin * .5)
-        print(self.text_pos)
 
     def change_mouse_offset(self, new_off: pg.Vector2):
         self.mouse_offset = new_off
@@ -217,6 +216,7 @@ class Input:
             elif key == pg.K_BACKSPACE:
                 self.value = self.value[:-1]
                 return
+
             # add to value
             if len(self.value) < self.max_value_chars:
                 char = pg.key.name(key)
