@@ -13,6 +13,7 @@ class Sorter:
         self.margin = 50
         self.outline_rect = pg.Rect(0, 0, self.size.x, self.size.y)
         self.sorter_screen = pg.Surface(self.size)
+        self.font = pg.font.SysFont(GameValues.FONT, 20)
 
         self.item_num = 1
         self.items = []
@@ -25,6 +26,7 @@ class Sorter:
         self.frames_per_op = 0
         self.frames_since_op = 0
         self.frame_num = 0
+        self.operation_num = 0
 
         # init generation
         self.generate_items()
@@ -41,6 +43,9 @@ class Sorter:
             random.shuffle(self.items)
             self.sorter = self.get_sorter()
             self.completed = False
+            self.started = False
+            self.frame_num = 0
+            self.operation_num = 0
 
     def change_item_num(self, new_num):
         self.item_num = new_num
@@ -58,13 +63,13 @@ class Sorter:
             self.sorter = self.get_sorter()
 
     def start_sorting(self):
-        if not self.started and not self.completed:
-            print('start')
+        if not self.completed:
             self.started = True
-            self.paused = False
             self.completed = False
-            self.frames_since_op = self.frames_per_op
-            self.frame_num = 0
+            if (not self.started and self.frame_num != 0) or self.completed:
+                self.frames_since_op = self.frames_per_op
+                self.frame_num = 0
+                self.operation_num = 0
 
     def stop_sorting(self):
         if self.started and not self.completed:
@@ -76,7 +81,6 @@ class Sorter:
             self.started = False
             self.completed = True
             self.game.stop_sorting()
-            print("finished!")
 
     def is_sorted(self):
         s = True
@@ -86,12 +90,25 @@ class Sorter:
         return s
 
     def update(self):
-        if self.started and not self.completed and not self.paused:
+        if self.started and not self.completed:
             self.frame_num += 1
             self.frames_since_op += 1
             if self.frames_since_op >= self.frames_per_op:
                 self.sorter.advance()
                 self.frames_since_op = 0
+                self.operation_num += 1
+
+    def render_text(self, screen: pg.Surface):
+        col = (100, 100, 100)
+        frames = self.font.render(f"frames: {self.frame_num}", False, col)
+        since_op = self.font.render(f"since last op: {self.frames_since_op}", False, col)
+        operations = self.font.render(f"operations: {self.operation_num}", False, col)
+        srted = self.font.render(f"sorted {len(self.sorter.get_completed_items())}/{self.item_num}", False, col)
+
+        screen.blit(frames, pg.Vector2(10, self.sorter_screen.get_height() - 25))
+        screen.blit(operations, pg.Vector2(150, self.sorter_screen.get_height() - 25))
+        screen.blit(since_op, pg.Vector2(320, self.sorter_screen.get_height() - 25))
+        screen.blit(srted, pg.Vector2(480, self.sorter_screen.get_height() - 25))
 
     def render(self, screen: pg.Surface):
         self.sorter_screen.fill(GameValues.BG_COL)
@@ -113,6 +130,7 @@ class Sorter:
                     return 255, 255, 255
 
                 pg.draw.rect(self.sorter_screen, get_col(), pg.Rect(x, y, math.ceil(bar_width), math.ceil(bar_width * item)))
+                self.render_text(self.sorter_screen)
 
         # final
         screen.blit(self.sorter_screen, self.pos)

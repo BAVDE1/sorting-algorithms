@@ -99,23 +99,22 @@ class Game:
         self.sorter.update()
 
     def start_sorting(self):
-
         if not self.sorter.completed:
-            print('start')
             for inpt in self.inputs:
                 inpt.active = False
             for i, btn in enumerate(self.buttons):
                 btn.active = False if i != 1 else True
+
             self.buttons[0].hidden = True
             self.buttons[1].hidden = False
             self.sorter.start_sorting()
 
     def stop_sorting(self):
-        print('stop')
         for inpt in self.inputs:
             inpt.active = True
         for btn in self.buttons:
             btn.active = True
+
         self.buttons[0].hidden = False
         self.buttons[1].hidden = True
 
