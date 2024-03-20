@@ -26,9 +26,12 @@ def get_render_method(pos: pg.Vector2, sorter, buttons, collection):
 
 
 def get_buttons(game, sorter: Sorter):
-    start = Button(Texts.START, pg.Vector2(GameValues.SCREEN_WIDTH - 140, GameValues.SCREEN_HEIGHT - 70), BTNOperation(sorter.start_sorting), colour=(100, 255, 100), outline=2)
+    start = Button(Texts.START, pg.Vector2(GameValues.SCREEN_WIDTH - 140, GameValues.SCREEN_HEIGHT - 70),
+                   BTNOperation(game.start_sorting), colour=(100, 255, 100), outline=2)
+    stop = Button(Texts.STOP, pg.Vector2(GameValues.SCREEN_WIDTH - 140, GameValues.SCREEN_HEIGHT - 70),
+                  BTNOperation(sorter.stop_sorting), colour=(255, 100, 100), outline=2, hidden=True)
     re_gen = Button(Texts.RE_GEN, pg.Vector2(GameValues.SCREEN_HEIGHT - 230, GameValues.SCREEN_HEIGHT - 70), BTNOperation(sorter.generate_items), text_size=20, outline=2)
-    return [start, re_gen]
+    return [start, stop, re_gen]
 
 
 def get_inputs(game, sorter: Sorter):
@@ -60,7 +63,7 @@ class Game:
         self.canvas_screen = pg.Surface(pg.Vector2(GameValues.SCREEN_WIDTH, GameValues.SCREEN_HEIGHT))
         self.final_screen = pg.display.get_surface()
 
-        self.sorter = Sorter(pg.Vector2(175, 100))
+        self.sorter = Sorter(self, pg.Vector2(175, 100))
         self.collections = get_collections(self, self.sorter)
         self.buttons = get_buttons(self, self.sorter)
         self.inputs = get_inputs(self, self.sorter)
@@ -86,12 +89,35 @@ class Game:
                 for coll in self.collections:
                     coll.mouse_down()
                 for button in self.buttons:
-                    button.perform_operation()
+                    if button.should_perform_op():
+                        button.perform_operation()
+                        return
                 for inpt in self.inputs:
                     inpt.mouse_down()
 
     def update(self):
         self.sorter.update()
+
+    def start_sorting(self):
+
+        if not self.sorter.completed:
+            print('start')
+            for inpt in self.inputs:
+                inpt.active = False
+            for i, btn in enumerate(self.buttons):
+                btn.active = False if i != 1 else True
+            self.buttons[0].hidden = True
+            self.buttons[1].hidden = False
+            self.sorter.start_sorting()
+
+    def stop_sorting(self):
+        print('stop')
+        for inpt in self.inputs:
+            inpt.active = True
+        for btn in self.buttons:
+            btn.active = True
+        self.buttons[0].hidden = False
+        self.buttons[1].hidden = True
 
     def render(self):
         self.final_screen.fill(GameValues.BG_COL)

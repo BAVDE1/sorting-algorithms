@@ -159,8 +159,11 @@ class Button:
         return (bounds.x < mp.x < bounds.x + bounds.width
                 and bounds.y < mp.y < bounds.y + bounds.height)
 
+    def should_perform_op(self):
+        return self.is_mouse_in_bounds() and not self.hidden and self.active
+
     def perform_operation(self):
-        if self.is_mouse_in_bounds() and not self.hidden and self.active:
+        if self.should_perform_op():
             self.operation.perform_operation()
 
 
@@ -172,7 +175,7 @@ class ButtonToggle(Button):
 
     def perform_operation(self):
         super().perform_operation()
-        if self.is_mouse_in_bounds():
+        if self.is_mouse_in_bounds() and not self.hidden and self.active:
             self.toggled = not self.toggled
 
     def render(self, screen: pg.Surface):

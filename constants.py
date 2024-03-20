@@ -11,6 +11,7 @@ class SortingMethods:
 
 class Texts:
     START = "> Start <"
+    STOP = "> Stop <"
     RE_GEN = "Re-gen"
     CHANGE = "change"
     ITEMS_NUM = "Num of items"
