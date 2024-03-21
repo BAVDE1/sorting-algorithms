@@ -165,8 +165,7 @@ class BubbleSorter(MethodSorter):
 
         if self.looking_at_item + 1 < total_items and self.looking_at_item < (total_items - self.completed_items):
             a, b = self.looking_at_item, self.looking_at_item + 1
-            item_a, item_b = self.sorter.items[a], self.sorter.items[b]
-            if item_a > item_b:
+            if self.sorter.items[a] > self.sorter.items[b]:
                 self.sorter.swap_items(a, b)
             self.looking_at_item += 1
             return
