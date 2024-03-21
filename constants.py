@@ -5,8 +5,12 @@ def get_middle(pos_x, width_1, width_2) -> int:
 
 
 class SortingMethods:
-    BUBBLE = "Bubble Sort"
-    OTHER = "Other Sort"
+    BUBBLE = "Bubble"
+    MERGE = "Merge"
+    Insertion = "Insertion"
+    Quick = "Quick"
+    Heap = "Heap"
+    Radix = "Radix"
 
 
 class Texts:

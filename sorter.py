@@ -18,7 +18,7 @@ class Sorter:
         self.item_num = 1
         self.items = []
 
-        self.sorting_method = SortingMethods.BUBBLE
+        self.sorting_method = SortingMethods.MERGE
         self.sorter: MethodSorter = self.get_sorter()
 
         self.started = False
@@ -33,8 +33,11 @@ class Sorter:
 
     def get_sorter(self):
         methods_dic = {
-            SortingMethods.BUBBLE: BubbleSorter
+            SortingMethods.BUBBLE: BubbleSorter,
+            SortingMethods.MERGE: MergeSort
         }
+        if self.sorting_method not in methods_dic:
+            raise ValueError(f"method {self.sorting_method} is not registered. look at Sorter.get_sorter()")
         return methods_dic[self.sorting_method](self)
 
     def generate_items(self):
@@ -58,7 +61,7 @@ class Sorter:
         self.margin = new_val
 
     def change_sorting_method(self, method: SortingMethods):
-        if self.started:
+        if not self.started:
             self.sorting_method = method
             self.sorter = self.get_sorter()
 
@@ -82,11 +85,16 @@ class Sorter:
             self.completed = True
             self.game.stop_sorting()
 
-    def is_sorted(self):
+    def is_sorted(self, li=None):
+        li = li if li is not None else self.items
+
+        if len(li) != self.item_num:
+            return False
+
         s = True
-        for i, item in enumerate(self.items):
-            if not i + 1 == len(self.items):
-                s = s if item + 1 == self.items[i + 1] else False
+        for i, item in enumerate(li):
+            if not i + 1 == len(li):
+                s = s if item + 1 == li[i + 1] else False
         return s
 
     def update(self):
@@ -121,7 +129,7 @@ class Sorter:
         pg.draw.rect(self.sorter_screen, (255, 255, 255), self.outline_rect, 1)
 
         items_width = self.size.x - (self.margin * 2)
-        bar_width = items_width / len(self.items)
+        bar_width = items_width / self.item_num
         if bar_width >= 1:
             for i, item in enumerate(self.items):
                 x = self.margin + (i * bar_width)
@@ -143,27 +151,30 @@ class Sorter:
 
 class MethodSorter:
     """ (theoretical) abstract class """
+    def __init__(self, sorter: Sorter):
+        self.sorter = sorter
+
     def advance(self):
         pass
 
     def get_looking_at_items(self) -> list[int]:
-        pass
+        return []
 
     def get_completed_items(self) -> list[int]:
-        pass
+        return []
 
 
 class BubbleSorter(MethodSorter):
-    def __init__(self, sorter: Sorter):
-        self.sorter = sorter
+    def __init__(self, *args):
+        super().__init__(*args)
 
         self.looking_at_item = 0
         self.completed_items = 0
 
     def advance(self):
-        total_items = self.sorter.item_num
+        total = self.sorter.item_num
 
-        if self.looking_at_item + 1 < total_items and self.looking_at_item < (total_items - self.completed_items):
+        if self.looking_at_item + 1 < total and self.looking_at_item < (total - self.completed_items):
             a, b = self.looking_at_item, self.looking_at_item + 1
             if self.sorter.items[a] > self.sorter.items[b]:
                 self.sorter.swap_items(a, b)
@@ -172,7 +183,7 @@ class BubbleSorter(MethodSorter):
 
         self.completed_items += 1
         self.looking_at_item = 0
-        if self.completed_items == total_items or self.sorter.is_sorted():
+        if self.completed_items == total or self.sorter.is_sorted():
             self.sorter.complete_sorting()
 
     def get_looking_at_items(self) -> list[int]:
@@ -184,3 +195,66 @@ class BubbleSorter(MethodSorter):
             if i + 1 > (self.sorter.item_num - self.completed_items):
                 li.append(i)
         return li
+
+
+class MergeSort(MethodSorter):
+    def __init__(self, *args):
+        super().__init__(*args)
+
+        self.groups = [[i] for i in self.sorter.items]
+        self.moved_groups = [[] for _ in range(round(len(self.groups) / 2))]
+        self.groups_of = 1
+        self.on_group = 0
+        self.on_moved_group = 0
+
+        self.even = self.sorter.item_num % 2 == 0
+
+    def advance(self):
+        print("before:")
+        print("group:       ", self.on_group, len(self.groups), self.groups)
+        print("moved group: ", self.on_moved_group, len(self.moved_groups), self.moved_groups)
+
+        # move stuff
+        if len(self.groups[self.on_group]) == 0:
+            self.moved_groups[self.on_moved_group].append(self.groups[self.on_group + 1].pop(0))
+        elif len(self.groups[self.on_group + 1]) == 0:
+            self.moved_groups[self.on_moved_group].append(self.groups[self.on_group].pop(0))
+        else:
+            add = int(self.groups[self.on_group][0] > self.groups[self.on_group + 1][0])  # 0 or 1
+            self.moved_groups[self.on_moved_group].append(self.groups[self.on_group + add].pop(0))
+
+        # update items list
+        li = []
+        for i in self.moved_groups:
+            for ii in i:
+                li.append(ii)
+        self.sorter.items = li + self.sorter.items[len(li):]
+
+        # finish group
+        if len(self.groups[self.on_group]) == 0 and len(self.groups[self.on_group + 1]) == 0:
+            self.on_group += 2
+            self.on_moved_group += 1
+
+            # finish row
+            if len(self.groups[-1]) == 0:
+                self.on_group = 0
+                self.on_moved_group = 0
+                self.groups_of += self.groups_of
+                self.groups = self.moved_groups
+                self.moved_groups = [[] for _ in range(round(len(self.groups) / 2))]
+
+        # finish sort
+        if self.sorter.is_sorted(self.groups[0]):
+            self.sorter.complete_sorting()
+            self.sorter.items = self.groups[0]
+
+        print("after:")
+        print("group:       ", self.on_group, len(self.groups), self.groups)
+        print("moved group: ", self.on_moved_group, len(self.moved_groups), self.moved_groups)
+        print("             ", self.sorter.items)
+
+    def get_looking_at_items(self) -> list[int]:
+        return []
+
+    def get_completed_items(self) -> list[int]:
+        return []
