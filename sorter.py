@@ -98,6 +98,11 @@ class Sorter:
                 self.frames_since_op = 0
                 self.operation_num += 1
 
+    def swap_items(self, a, b):
+        item_a, item_b = self.items[a], self.items[b]
+        self.items[a] = item_b
+        self.items[b] = item_a
+
     def render_text(self, screen: pg.Surface):
         col = (100, 100, 100)
         frames = self.font.render(f"frames: {self.frame_num}", False, col)
@@ -162,8 +167,7 @@ class BubbleSorter(MethodSorter):
             a, b = self.looking_at_item, self.looking_at_item + 1
             item_a, item_b = self.sorter.items[a], self.sorter.items[b]
             if item_a > item_b:
-                self.sorter.items[a] = item_b
-                self.sorter.items[b] = item_a
+                self.sorter.swap_items(a, b)
             self.looking_at_item += 1
             return
 
