@@ -265,9 +265,3 @@ class MergeSort(MethodSorter):
 
     def validator(self, value: int) -> str:
         return str(int(value) + (value % 2))
-
-    def get_looking_at_items(self) -> list[int]:
-        return []
-
-    def get_completed_items(self) -> list[int]:
-        return []
