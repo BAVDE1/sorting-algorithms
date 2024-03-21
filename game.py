@@ -56,7 +56,7 @@ def get_collections(game, sorter: Sorter):
 class Game:
     def __init__(self):
         self.running = True
-        self.fps = 60
+        self.fps = 120
         self.clock = pg.time.Clock()
         self.keys = pg.key.get_pressed()
 
