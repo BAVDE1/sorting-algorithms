@@ -50,6 +50,9 @@ class Sorter:
             self.frame_num = 0
             self.operation_num = 0
 
+    def validator(self, value) -> str:
+        return self.sorter.validator(value)
+
     def change_item_num(self, new_num):
         self.item_num = new_num
         self.generate_items()
@@ -64,6 +67,10 @@ class Sorter:
         if not self.started:
             self.sorting_method = method
             self.sorter = self.get_sorter()
+
+            self.item_num = int(self.validator(self.item_num))
+            self.generate_items()
+            self.game.change_item_num_input(self.item_num)
 
     def start_sorting(self):
         if not self.completed:
@@ -156,6 +163,9 @@ class MethodSorter:
 
     def advance(self):
         pass
+
+    def validator(self, value: int) -> str:
+        return str(value)
 
     def get_looking_at_items(self) -> list[int]:
         return []
@@ -252,6 +262,9 @@ class MergeSort(MethodSorter):
         print("group:       ", self.on_group, len(self.groups), self.groups)
         print("moved group: ", self.on_moved_group, len(self.moved_groups), self.moved_groups)
         print("             ", self.sorter.items)
+
+    def validator(self, value: int) -> str:
+        return str(int(value) + (value % 2))
 
     def get_looking_at_items(self) -> list[int]:
         return []

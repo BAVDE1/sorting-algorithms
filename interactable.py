@@ -46,7 +46,7 @@ class Collection:
     def __init__(self, pos: pg.Vector2, size: pg.Vector2, buttons=None, toggled=False):
         if buttons is None:
             buttons = []
-        self.buttons = [button for button in buttons if isinstance(button, Button)]
+        self.buttons = [btn for btn in buttons if isinstance(btn, Button)]
 
         self.pos = pos
         self.size = size
@@ -57,7 +57,7 @@ class Collection:
     def add_buttons(self, new_buttons: list):
         for new_btn in new_buttons:
             if isinstance(new_btn, Button):
-                new_btn.hidden = not self.toggled
+                new_btn._hidden = not self.toggled
                 new_btn.change_mouse_offset(self.pos)
                 self.buttons.append(new_btn)
 
@@ -70,19 +70,23 @@ class Collection:
 
     def toggle(self):
         self.toggled = not self.toggled
-        for button in self.buttons:
-            button.hidden = not self.toggled
+        for btn in self.buttons:
+            btn._hidden = not self.toggled
 
     def mouse_down(self):
-        for button in self.buttons:
-            button.perform_operation()
+        for btn in self.buttons:
+            btn.perform_operation()
+
+    def toggle_active(self, val):
+        for btn in self.buttons:
+            btn._active = val
 
     def render(self, screen: pg.Surface):
         self.coll_screen.fill(GameValues.BG_COL)
         if self.toggled:
             pg.draw.rect(self.coll_screen, (255, 255, 255), pg.Rect(0, 0, self.size.x, self.size.y), 2)
-            for button in self.buttons:
-                button.render(self.coll_screen)
+            for btn in self.buttons:
+                btn.render(self.coll_screen)
         screen.blit(self.coll_screen, self.pos)
 
     def __repr__(self):
@@ -98,8 +102,8 @@ class Button:
 
         self.margin = text_margin
         self.operation = operation
-        self.hidden = hidden
-        self.active = active
+        self._hidden = hidden
+        self._active = active
 
         self.text = text
         self.colour: pg.Color = pg.Color(colour)
@@ -125,15 +129,21 @@ class Button:
     def change_mouse_offset(self, new_off: pg.Vector2):
         self.mouse_offset = new_off
 
+    def set_hidden(self, val: bool):
+        self._hidden = val
+
+    def set_active(self, val: bool):
+        self._active = val
+
     def get_col(self, given_col=None):
         col = pg.Color(given_col if given_col else self.colour)
-        if not self.active:
+        if not self._active:
             m = 0.3
             col.update(math.ceil(col.r * m), math.ceil(col.g * m), math.ceil(col.b * m))
         return col
 
     def render(self, screen: pg.Surface):
-        if not self.hidden:
+        if not self._hidden:
             self.mouse_hover(screen)
 
             # outline
@@ -160,7 +170,7 @@ class Button:
                 and bounds.y < mp.y < bounds.y + bounds.height)
 
     def should_perform_op(self):
-        return self.is_mouse_in_bounds() and not self.hidden and self.active
+        return self.is_mouse_in_bounds() and not self._hidden and self._active
 
     def perform_operation(self):
         if self.should_perform_op():
@@ -175,7 +185,7 @@ class ButtonToggle(Button):
 
     def perform_operation(self):
         super().perform_operation()
-        if self.is_mouse_in_bounds() and not self.hidden and self.active:
+        if self.is_mouse_in_bounds() and not self._hidden and self._active:
             self.toggled = not self.toggled
 
     def render(self, screen: pg.Surface):
@@ -187,18 +197,19 @@ class ButtonToggle(Button):
 class Input:
     def __init__(self, text, pos: pg.Vector2, operation: InputOperation,
                  text_size=20, text_col=(255, 255, 0), max_value_chars=3, int_only=False, margin=5,
-                 default_val="", max_val=0, min_val=0, hidden=False, active=True):
+                 default_val="", max_val=0, min_val=0, hidden=False, active=True, validator=str):
         self.font = pg.font.SysFont(GameValues.FONT, text_size)
 
         self.text = text
         self.colour: pg.Color = pg.Color(text_col)
         self.margin = margin
         self.operation = operation
-        self.hidden = hidden
-        self.active = active
+        self._hidden = hidden
+        self._active = active
 
         self.selected = True
         self.value = default_val
+        self.validator = validator
 
         self.max_value = max_val
         self.min_value = min_val
@@ -212,7 +223,7 @@ class Input:
         self.de_select()  # load defaults
 
     def key_input(self, key):
-        if self.selected and not self.hidden and self.active:
+        if self.selected and not self._hidden and self._active:
             if key == pg.K_RETURN:
                 self.de_select()
                 return
@@ -231,7 +242,7 @@ class Input:
 
     def get_col(self, given_col=None):
         col = pg.Color(given_col if given_col else self.colour)
-        if not self.active:
+        if not self._active:
             m = 0.3
             col.update(math.ceil(col.r * m), math.ceil(col.g * m), math.ceil(col.b * m))
         return col
@@ -239,18 +250,31 @@ class Input:
     def de_select(self):
         if self.selected:
             self.selected = False
-            if self.int_only:
-                self.value = str(min(self.max_value, max(self.min_value, int(self.value if self.value else 0))))
+            self.validate_input()
             self.operation.perform_operation(int(self.value) if self.int_only else self.value)
 
+    def change_value(self, new_value):
+        self.value = new_value
+        self.validate_input()
+
+    def validate_input(self):
+        if self.int_only:
+            self.value = self.validator(min(self.max_value, max(self.min_value, int(self.value if self.value else 0))))
+
     def mouse_down(self):
-        if self.is_mouse_in_bounds() and not self.hidden and self.active:
+        if self.is_mouse_in_bounds() and not self._hidden and self._active:
             self.selected = True
             return
         self.de_select()
 
+    def set_hidden(self, val: bool):
+        self._hidden = val
+
+    def set_active(self, val: bool):
+        self._active = val
+
     def render(self, screen: pg.Surface):
-        if not self.hidden:
+        if not self._hidden:
             pg.draw.rect(screen, self.get_col((50, 50, 50)), self.box_bounds)
             self.mouse_hover(screen)
 

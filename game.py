@@ -36,7 +36,7 @@ def get_buttons(game, sorter: Sorter):
 
 def get_inputs(game, sorter: Sorter):
     items_num = Input(Texts.ITEMS_NUM, pg.Vector2(GameValues.SCREEN_WIDTH - 340, 20),
-                      InputOperation(function=sorter.change_item_num), int_only=True, default_val='8', max_val=GameValues.MAX_ITEMS, min_val=GameValues.MIN_ITEMS)
+                      InputOperation(function=sorter.change_item_num), int_only=True, default_val='8', max_val=GameValues.MAX_ITEMS, min_val=GameValues.MIN_ITEMS, validator=sorter.validator)
     frames_per_op = Input(Texts.FRAMES_OP, pg.Vector2(GameValues.SCREEN_WIDTH - 200, 20),
                           InputOperation(function=sorter.change_frames_per_op), int_only=True, default_val='20', max_val=GameValues.MAX_FRAMES, min_val=GameValues.MIN_FRAMES)
     margin = Input(Texts.MARGIN, pg.Vector2(GameValues.SCREEN_WIDTH - 80, 20),
@@ -44,13 +44,13 @@ def get_inputs(game, sorter: Sorter):
     return [items_num, frames_per_op, margin]
 
 
-def get_collections(game, sorter: Sorter):
+def get_collection(game, sorter: Sorter) -> Collection:
     method_collection = Collection(pg.Vector2(6, 110), pg.Vector2(160, 590))
     method_collection.add_buttons([
         Button(SortingMethods.BUBBLE, pg.Vector2(5, 5), BTNOperation(function=sorter.change_sorting_method, method=SortingMethods.BUBBLE), colour=(255, 255, 255), text_size=20),
         Button(SortingMethods.MERGE, pg.Vector2(5, 35), BTNOperation(function=sorter.change_sorting_method, method=SortingMethods.MERGE), colour=(255, 255, 255), text_size=20)
     ])
-    return [method_collection]
+    return method_collection
 
 
 class Game:
@@ -64,10 +64,10 @@ class Game:
         self.final_screen = pg.display.get_surface()
 
         self.sorter = Sorter(self, pg.Vector2(175, 100))
-        self.collections = get_collections(self, self.sorter)
+        self.collection = get_collection(self, self.sorter)
         self.buttons = get_buttons(self, self.sorter)
         self.inputs = get_inputs(self, self.sorter)
-        self.render_method = get_render_method(pg.Vector2(10, 10), self.sorter, self.buttons, self.collections[0])
+        self.render_method = get_render_method(pg.Vector2(10, 10), self.sorter, self.buttons, self.collection)
 
     def events(self):
         for event in pg.event.get():
@@ -86,8 +86,7 @@ class Game:
 
             # mouse
             if event.type == pg.MOUSEBUTTONDOWN and pg.mouse.get_pressed()[0]:
-                for coll in self.collections:
-                    coll.mouse_down()
+                self.collection.mouse_down()
                 for button in self.buttons:
                     if button.should_perform_op():
                         button.perform_operation()
@@ -100,30 +99,34 @@ class Game:
 
     def start_sorting(self):
         if not self.sorter.completed:
+            self.collection.toggle_active(False)
             for inpt in self.inputs:
-                inpt.active = False
+                inpt.set_active(False)
             for i, btn in enumerate(self.buttons):
-                btn.active = False if i != 1 else True
+                btn.set_active(i == 1)
 
-            self.buttons[0].hidden = True
-            self.buttons[1].hidden = False
+            self.buttons[0].set_hidden(True)
+            self.buttons[1].set_hidden(False)
             self.sorter.start_sorting()
 
     def stop_sorting(self):
+        self.collection.toggle_active(True)
         for inpt in self.inputs:
-            inpt.active = True
+            inpt.set_active(True)
         for btn in self.buttons:
-            btn.active = True
+            btn.set_active(True)
 
-        self.buttons[0].hidden = False
-        self.buttons[1].hidden = True
+        self.buttons[0].set_hidden(False)
+        self.buttons[1].set_hidden(True)
+
+    def change_item_num_input(self, value):
+        self.inputs[0].change_value(value)
 
     def render(self):
         self.final_screen.fill(GameValues.BG_COL)
         self.canvas_screen.fill(GameValues.BG_COL)
 
-        for coll in self.collections:
-            coll.render(self.canvas_screen)
+        self.collection.render(self.canvas_screen)
         for button in self.buttons:
             button.render(self.canvas_screen)
         for inpt in self.inputs:
