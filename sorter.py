@@ -213,17 +213,12 @@ class MergeSort(MethodSorter):
 
         self.groups = [[i] for i in self.sorter.items]
         self.moved_groups = [[] for _ in range(round(len(self.groups) / 2))]
-        self.groups_of = 1
         self.on_group = 0
         self.on_moved_group = 0
 
         self.even = self.sorter.item_num % 2 == 0
 
     def advance(self):
-        print("before:")
-        print("group:       ", self.on_group, len(self.groups), self.groups)
-        print("moved group: ", self.on_moved_group, len(self.moved_groups), self.moved_groups)
-
         # move stuff
         if len(self.groups[self.on_group]) == 0:
             self.moved_groups[self.on_moved_group].append(self.groups[self.on_group + 1].pop(0))
@@ -235,9 +230,9 @@ class MergeSort(MethodSorter):
 
         # update items list
         li = []
-        for i in self.moved_groups:
-            for ii in i:
-                li.append(ii)
+        for mg in self.moved_groups:
+            for item in mg:
+                li.append(item)
         self.sorter.items = li + self.sorter.items[len(li):]
 
         # finish group
@@ -249,19 +244,21 @@ class MergeSort(MethodSorter):
             if len(self.groups[-1]) == 0:
                 self.on_group = 0
                 self.on_moved_group = 0
-                self.groups_of += self.groups_of
                 self.groups = self.moved_groups
+
+                # odd no. of groups, split midd group into two
+                if len(self.groups) % 2 == 1 and len(self.groups) > 1:
+                    mid = int((len(self.groups) - 1) / 2)
+                    mid_item = self.groups[mid]
+                    self.groups[mid] = mid_item[:int(len(mid_item) / 2)]
+                    self.groups.insert(mid + 1, mid_item[int(len(mid_item) / 2):])
+
                 self.moved_groups = [[] for _ in range(round(len(self.groups) / 2))]
 
         # finish sort
         if self.sorter.is_sorted(self.groups[0]):
             self.sorter.complete_sorting()
             self.sorter.items = self.groups[0]
-
-        print("after:")
-        print("group:       ", self.on_group, len(self.groups), self.groups)
-        print("moved group: ", self.on_moved_group, len(self.moved_groups), self.moved_groups)
-        print("             ", self.sorter.items)
 
     def validator(self, value: int) -> str:
         return str(int(value) + (value % 2))

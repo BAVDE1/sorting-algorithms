@@ -36,9 +36,9 @@ def get_buttons(game, sorter: Sorter):
 
 def get_inputs(game, sorter: Sorter):
     items_num = Input(Texts.ITEMS_NUM, pg.Vector2(GameValues.SCREEN_WIDTH - 340, 20),
-                      InputOperation(function=sorter.change_item_num), int_only=True, default_val='8', max_val=GameValues.MAX_ITEMS, min_val=GameValues.MIN_ITEMS, validator=sorter.validator)
+                      InputOperation(function=sorter.change_item_num), int_only=True, default_val='50', max_val=GameValues.MAX_ITEMS, min_val=GameValues.MIN_ITEMS, validator=sorter.validator)
     frames_per_op = Input(Texts.FRAMES_OP, pg.Vector2(GameValues.SCREEN_WIDTH - 200, 20),
-                          InputOperation(function=sorter.change_frames_per_op), int_only=True, default_val='20', max_val=GameValues.MAX_FRAMES, min_val=GameValues.MIN_FRAMES)
+                          InputOperation(function=sorter.change_frames_per_op), int_only=True, default_val='1', max_val=GameValues.MAX_FRAMES, min_val=GameValues.MIN_FRAMES)
     margin = Input(Texts.MARGIN, pg.Vector2(GameValues.SCREEN_WIDTH - 80, 20),
                    InputOperation(function=sorter.change_margin), int_only=True, default_val='30', max_val=GameValues.MAX_MARGIN, min_val=GameValues.MIN_MARGIN)
     return [items_num, frames_per_op, margin]
