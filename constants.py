@@ -7,10 +7,10 @@ def get_middle(pos_x, width_1, width_2) -> int:
 class SortingMethods:
     BUBBLE = "Bubble"
     MERGE = "Merge"
-    Insertion = "Insertion"
-    Quick = "Quick"
-    Heap = "Heap"
-    Radix = "Radix"
+    INSERTION = "Insertion"
+    QUICK = "Quick"
+    HEAP = "Heap"
+    RADIX = "Radix"
 
 
 class Texts:
@@ -23,12 +23,17 @@ class Texts:
     MARGIN = "Margin"
     SORTING_METHOD = "Sorting Method:"
 
+    FRAMES = "frames"
+    SINCE_OP = "since op"
+    OPERATIONS = "operations"
+    SORTED = "sorted"
+
 
 class GameValues:
     FONT = "Times New Roman"
 
     MIN_ITEMS = 3
-    MIN_FRAMES = 1
+    MIN_FRAMES = 0
     MIN_MARGIN = 30
 
     MAX_ITEMS = 500

@@ -1,7 +1,11 @@
 import math
+import time
 
 import pygame as pg
 import random
+
+import setuptools
+
 from constants import *
 
 
@@ -18,7 +22,7 @@ class Sorter:
         self.item_num = 1
         self.items = []
 
-        self.sorting_method = SortingMethods.MERGE
+        self.sorting_method = SortingMethods.INSERTION
         self.sorter: MethodSorter = self.get_sorter()
 
         self.started = False
@@ -34,7 +38,8 @@ class Sorter:
     def get_sorter(self):
         methods_dic = {
             SortingMethods.BUBBLE: BubbleSorter,
-            SortingMethods.MERGE: MergeSort
+            SortingMethods.MERGE: MergeSort,
+            SortingMethods.INSERTION: InsertionSort
         }
         if self.sorting_method not in methods_dic:
             raise ValueError(f"method {self.sorting_method} is not registered. look at Sorter.get_sorter()")
@@ -105,13 +110,19 @@ class Sorter:
         return s
 
     def update(self):
+        def adv():
+            self.sorter.advance()
+            self.frames_since_op = 0
+            self.operation_num += 1
+
         if self.started and not self.completed:
             self.frame_num += 1
             self.frames_since_op += 1
-            if self.frames_since_op >= self.frames_per_op:
-                self.sorter.advance()
-                self.frames_since_op = 0
-                self.operation_num += 1
+            if self.frames_per_op == 0:
+                while not self.completed:
+                    adv()
+            elif self.frames_since_op >= self.frames_per_op:
+                adv()
 
     def swap_items(self, a, b):
         item_a, item_b = self.items[a], self.items[b]
@@ -120,15 +131,15 @@ class Sorter:
 
     def render_text(self, screen: pg.Surface):
         col = (100, 100, 100)
-        frames = self.font.render(f"frames: {self.frame_num}", False, col)
-        since_op = self.font.render(f"since last op: {self.frames_since_op}", False, col)
-        operations = self.font.render(f"operations: {self.operation_num}", False, col)
-        srted = self.font.render(f"sorted {len(self.sorter.get_completed_items())}/{self.item_num}", False, col)
+        frames = self.font.render(f"{Texts.FRAMES}: {self.frame_num}", False, col)
+        since_op = self.font.render(f"{Texts.SINCE_OP}: {self.frames_since_op}", False, col)
+        operations = self.font.render(f"{Texts.OPERATIONS}: {self.operation_num}", False, col)
+        srted = self.font.render(f"{Texts.SORTED}: {len(self.sorter.get_completed_items())}/{self.item_num}", False, col)
 
         screen.blit(frames, pg.Vector2(10, self.sorter_screen.get_height() - 25))
         screen.blit(operations, pg.Vector2(150, self.sorter_screen.get_height() - 25))
         screen.blit(since_op, pg.Vector2(320, self.sorter_screen.get_height() - 25))
-        screen.blit(srted, pg.Vector2(480, self.sorter_screen.get_height() - 25))
+        screen.blit(srted, pg.Vector2(450, self.sorter_screen.get_height() - 25))
 
     def render(self, screen: pg.Surface):
         self.sorter_screen.fill(GameValues.BG_COL)
@@ -160,6 +171,7 @@ class MethodSorter:
     """ (theoretical) abstract class """
     def __init__(self, sorter: Sorter):
         self.sorter = sorter
+        self.looking_at = 0
 
     def advance(self):
         pass
@@ -168,43 +180,32 @@ class MethodSorter:
         return str(value)
 
     def get_looking_at_items(self) -> list[int]:
-        return []
+        return [self.looking_at]
 
     def get_completed_items(self) -> list[int]:
-        return []
+        completed = [i for i in range(self.sorter.item_num)]
+        return [i for i in completed if i + 1 == self.sorter.items[i]]
 
 
 class BubbleSorter(MethodSorter):
     def __init__(self, *args):
         super().__init__(*args)
-
-        self.looking_at_item = 0
         self.completed_items = 0
 
     def advance(self):
         total = self.sorter.item_num
 
-        if self.looking_at_item + 1 < total and self.looking_at_item < (total - self.completed_items):
-            a, b = self.looking_at_item, self.looking_at_item + 1
+        if self.looking_at + 1 < total and self.looking_at < (total - self.completed_items):
+            a, b = self.looking_at, self.looking_at + 1
             if self.sorter.items[a] > self.sorter.items[b]:
                 self.sorter.swap_items(a, b)
-            self.looking_at_item += 1
+            self.looking_at += 1
             return
 
         self.completed_items += 1
-        self.looking_at_item = 0
+        self.looking_at = 0
         if self.completed_items == total or self.sorter.is_sorted():
             self.sorter.complete_sorting()
-
-    def get_looking_at_items(self) -> list[int]:
-        return [self.looking_at_item]
-
-    def get_completed_items(self) -> list[int]:
-        li = []
-        for i, item in enumerate(self.sorter.items):
-            if i + 1 > (self.sorter.item_num - self.completed_items):
-                li.append(i)
-        return li
 
 
 class MergeSort(MethodSorter):
@@ -215,8 +216,6 @@ class MergeSort(MethodSorter):
         self.moved_groups = [[] for _ in range(round(len(self.groups) / 2))]
         self.on_group = 0
         self.on_moved_group = 0
-
-        self.even = self.sorter.item_num % 2 == 0
 
     def advance(self):
         # move stuff
@@ -234,6 +233,7 @@ class MergeSort(MethodSorter):
             for item in mg:
                 li.append(item)
         self.sorter.items = li + self.sorter.items[len(li):]
+        self.looking_at = self.sorter.items.index(li[-1]) + 1
 
         # finish group
         if len(self.groups[self.on_group]) == 0 and len(self.groups[self.on_group + 1]) == 0:
@@ -242,8 +242,7 @@ class MergeSort(MethodSorter):
 
             # finish row
             if len(self.groups[-1]) == 0:
-                self.on_group = 0
-                self.on_moved_group = 0
+                self.on_group = self.on_moved_group = 0
                 self.groups = self.moved_groups
 
                 # odd no. of groups, split midd group into two
@@ -261,4 +260,23 @@ class MergeSort(MethodSorter):
             self.sorter.items = self.groups[0]
 
     def validator(self, value: int) -> str:
+        # even numbers only
         return str(int(value) + (value % 2))
+
+
+class InsertionSort(MethodSorter):
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.up_to_column = 0
+        self.looking_at = 1
+
+    def advance(self):
+        if (self.sorter.items[self.looking_at] > self.sorter.items[self.looking_at - 1]) or self.looking_at == 0:
+            self.up_to_column += 1
+            self.looking_at = self.up_to_column + 1
+        else:
+            self.sorter.swap_items(self.looking_at - 1, self.looking_at)
+            self.looking_at -= 1
+
+        if self.sorter.is_sorted():
+            self.sorter.complete_sorting()

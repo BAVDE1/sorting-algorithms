@@ -36,7 +36,7 @@ def get_buttons(game, sorter: Sorter):
 
 def get_inputs(game, sorter: Sorter):
     items_num = Input(Texts.ITEMS_NUM, pg.Vector2(GameValues.SCREEN_WIDTH - 340, 20),
-                      InputOperation(function=sorter.change_item_num), int_only=True, default_val='50', max_val=GameValues.MAX_ITEMS, min_val=GameValues.MIN_ITEMS, validator=sorter.validator)
+                      InputOperation(function=sorter.change_item_num), int_only=True, default_val='30', max_val=GameValues.MAX_ITEMS, min_val=GameValues.MIN_ITEMS, validator=sorter.validator)
     frames_per_op = Input(Texts.FRAMES_OP, pg.Vector2(GameValues.SCREEN_WIDTH - 200, 20),
                           InputOperation(function=sorter.change_frames_per_op), int_only=True, default_val='1', max_val=GameValues.MAX_FRAMES, min_val=GameValues.MIN_FRAMES)
     margin = Input(Texts.MARGIN, pg.Vector2(GameValues.SCREEN_WIDTH - 80, 20),
@@ -45,10 +45,13 @@ def get_inputs(game, sorter: Sorter):
 
 
 def get_collection(game, sorter: Sorter) -> Collection:
+    size = 20
+    col = (255, 255, 255)
     method_collection = Collection(pg.Vector2(6, 110), pg.Vector2(160, 590))
     method_collection.add_buttons([
-        Button(SortingMethods.BUBBLE, pg.Vector2(5, 5), BTNOperation(function=sorter.change_sorting_method, method=SortingMethods.BUBBLE), colour=(255, 255, 255), text_size=20),
-        Button(SortingMethods.MERGE, pg.Vector2(5, 35), BTNOperation(function=sorter.change_sorting_method, method=SortingMethods.MERGE), colour=(255, 255, 255), text_size=20)
+        Button(SortingMethods.BUBBLE, pg.Vector2(5, 5), BTNOperation(function=sorter.change_sorting_method, method=SortingMethods.BUBBLE), colour=col, text_size=size),
+        Button(SortingMethods.MERGE, pg.Vector2(5, 35), BTNOperation(function=sorter.change_sorting_method, method=SortingMethods.MERGE), colour=col, text_size=size),
+        Button(SortingMethods.INSERTION, pg.Vector2(5, 65), BTNOperation(function=sorter.change_sorting_method, method=SortingMethods.INSERTION), colour=col, text_size=size)
     ])
     return method_collection
 
@@ -87,12 +90,12 @@ class Game:
             # mouse
             if event.type == pg.MOUSEBUTTONDOWN and pg.mouse.get_pressed()[0]:
                 self.collection.mouse_down()
+                for inpt in self.inputs:
+                    inpt.mouse_down()
                 for button in self.buttons:
                     if button.should_perform_op():
                         button.perform_operation()
                         return
-                for inpt in self.inputs:
-                    inpt.mouse_down()
 
     def update(self):
         self.sorter.update()
