@@ -22,7 +22,7 @@ class Sorter:
         self.item_num = 1
         self.items = []
 
-        self.sorting_method = SortingMethods.INSERTION
+        self.sorting_method = SortingMethods.QUICK
         self.sorter: MethodSorter = self.get_sorter()
 
         self.started = False
@@ -39,7 +39,8 @@ class Sorter:
         methods_dic = {
             SortingMethods.BUBBLE: BubbleSorter,
             SortingMethods.MERGE: MergeSort,
-            SortingMethods.INSERTION: InsertionSort
+            SortingMethods.INSERTION: InsertionSort,
+            SortingMethods.QUICK: QuickSort
         }
         if self.sorting_method not in methods_dic:
             raise ValueError(f"method {self.sorting_method} is not registered. look at Sorter.get_sorter()")
@@ -154,10 +155,10 @@ class Sorter:
                 y = (self.size.y - self.margin) - (bar_width * item)
 
                 def get_col():
+                    if not self.completed and i in self.sorter.get_looking_at_items():
+                        return 255, 100, 100
                     if self.completed or i in self.sorter.get_completed_items():
                         return 100, 255, 100
-                    if i in self.sorter.get_looking_at_items():
-                        return 255, 100, 100
                     return 255, 255, 255
 
                 pg.draw.rect(self.sorter_screen, get_col(), pg.Rect(x, y, math.ceil(bar_width), math.ceil(bar_width * item)))
@@ -194,9 +195,9 @@ class BubbleSorter(MethodSorter):
 
     def advance(self):
         total = self.sorter.item_num
+        a, b = self.looking_at, self.looking_at + 1
 
-        if self.looking_at + 1 < total and self.looking_at < (total - self.completed_items):
-            a, b = self.looking_at, self.looking_at + 1
+        if b < total and a < (total - self.completed_items):
             if self.sorter.items[a] > self.sorter.items[b]:
                 self.sorter.swap_items(a, b)
             self.looking_at += 1
@@ -204,39 +205,37 @@ class BubbleSorter(MethodSorter):
 
         self.completed_items += 1
         self.looking_at = 0
-        if self.completed_items == total or self.sorter.is_sorted():
+        if self.sorter.is_sorted():
             self.sorter.complete_sorting()
 
 
 class MergeSort(MethodSorter):
     def __init__(self, *args):
         super().__init__(*args)
-
         self.groups = [[i] for i in self.sorter.items]
-        self.moved_groups = [[] for _ in range(round(len(self.groups) / 2))]
+        self.moved_groups = self.gen_moved()
         self.on_group = 0
         self.on_moved_group = 0
 
+    def gen_moved(self):
+        # generate empty lists
+        return [[] for _ in range(round(len(self.groups) / 2))]
+
     def advance(self):
-        # move stuff
-        if len(self.groups[self.on_group]) == 0:
-            self.moved_groups[self.on_moved_group].append(self.groups[self.on_group + 1].pop(0))
-        elif len(self.groups[self.on_group + 1]) == 0:
-            self.moved_groups[self.on_moved_group].append(self.groups[self.on_group].pop(0))
-        else:
-            add = int(self.groups[self.on_group][0] > self.groups[self.on_group + 1][0])  # 0 or 1
-            self.moved_groups[self.on_moved_group].append(self.groups[self.on_group + add].pop(0))
+        # if both groups aren't empty, move lowest, else move item in group that isn't empty
+        g1, g2 = self.groups[self.on_group], self.groups[self.on_group + 1]
+        add = g1[0] > g2[0] if len(g1) > 0 and len(g2) > 0 else len(g1) == 0  # 0 or 1
+        self.moved_groups[self.on_moved_group].append(self.groups[self.on_group + add].pop(0))
 
         # update items list
-        li = []
+        i = -1
         for mg in self.moved_groups:
             for item in mg:
-                li.append(item)
-        self.sorter.items = li + self.sorter.items[len(li):]
-        self.looking_at = self.sorter.items.index(li[-1]) + 1
+                self.sorter.items[i := i + 1] = item
+                self.looking_at = self.sorter.items.index(item) + 1
 
         # finish group
-        if len(self.groups[self.on_group]) == 0 and len(self.groups[self.on_group + 1]) == 0:
+        if len(g1) == 0 and len(g2) == 0:
             self.on_group += 2
             self.on_moved_group += 1
 
@@ -252,7 +251,7 @@ class MergeSort(MethodSorter):
                     self.groups[mid] = mid_item[:int(len(mid_item) / 2)]
                     self.groups.insert(mid + 1, mid_item[int(len(mid_item) / 2):])
 
-                self.moved_groups = [[] for _ in range(round(len(self.groups) / 2))]
+                self.moved_groups = self.gen_moved()
 
         # finish sort
         if self.sorter.is_sorted(self.groups[0]):
@@ -280,3 +279,11 @@ class InsertionSort(MethodSorter):
 
         if self.sorter.is_sorted():
             self.sorter.complete_sorting()
+
+
+class QuickSort(MethodSorter):
+    def __init__(self, *args):
+        super().__init__(*args)
+
+    def advance(self):
+        pass
