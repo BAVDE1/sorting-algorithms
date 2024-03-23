@@ -17,7 +17,7 @@ def get_render_method(pos: pg.Vector2, sorter, buttons, collection):
     buttons.append(ButtonToggle(Texts.CHANGE, pg.Vector2(pos.x - 12, pos.y + 60), BTNOperation(collection=collection), text_size=15, text_margin=8))
 
     def render_method(screen: pg.Surface):
-        method_text = font_b.render(sorter.sorting_method, True, (255, 255, 255))  # always refreshing
+        method_text = font_b.render(sorter.sorting_method + " " + Texts.SORT, True, (255, 255, 255))  # always refreshing
 
         screen.blit(title_text, pos)
         screen.blit(method_text, pg.Vector2(pos.x, pos.y + 30))
@@ -36,9 +36,9 @@ def get_buttons(game, sorter: Sorter):
 
 def get_inputs(game, sorter: Sorter):
     items_num = Input(Texts.ITEMS_NUM, pg.Vector2(GameValues.SCREEN_WIDTH - 340, 20),
-                      InputOperation(function=sorter.change_item_num), int_only=True, default_val='10', max_val=GameValues.MAX_ITEMS, min_val=GameValues.MIN_ITEMS, validator=sorter.validator)
+                      InputOperation(function=sorter.change_item_num), int_only=True, default_val='20', max_val=GameValues.MAX_ITEMS, min_val=GameValues.MIN_ITEMS, validator=sorter.validator)
     frames_per_op = Input(Texts.FRAMES_OP, pg.Vector2(GameValues.SCREEN_WIDTH - 200, 20),
-                          InputOperation(function=sorter.change_frames_per_op), int_only=True, default_val='5', max_val=GameValues.MAX_FRAMES, min_val=GameValues.MIN_FRAMES)
+                          InputOperation(function=sorter.change_frames_per_op), int_only=True, default_val='2', max_val=GameValues.MAX_FRAMES, min_val=GameValues.MIN_FRAMES)
     margin = Input(Texts.MARGIN, pg.Vector2(GameValues.SCREEN_WIDTH - 80, 20),
                    InputOperation(function=sorter.change_margin), int_only=True, default_val='30', max_val=GameValues.MAX_MARGIN, min_val=GameValues.MIN_MARGIN)
     return [items_num, frames_per_op, margin]
@@ -78,8 +78,16 @@ class Game:
             # keydown input
             if event.type == pg.KEYDOWN:
                 self.keys = pg.key.get_pressed()
+                should_start = True
                 for inpt in self.inputs:
+                    should_start = should_start if not inpt.selected else False
                     inpt.key_input(event.key)
+
+                # start sorting
+                if should_start and event.key == pg.K_RETURN:
+                    if self.sorter.completed:
+                        self.sorter.generate_items()
+                    self.start_sorting()
 
             if event.type == pg.KEYUP:
                 self.keys = pg.key.get_pressed()

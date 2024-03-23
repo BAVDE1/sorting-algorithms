@@ -206,15 +206,15 @@ class Input:
         self.operation = operation
         self._hidden = hidden
         self._active = active
-
-        self.selected = True
-        self.value = default_val
-        self.validator = validator
+        self.int_only = int_only
 
         self.max_value = max_val
         self.min_value = min_val
         self.max_value_chars = max_value_chars
-        self.int_only = int_only
+
+        self.selected = True
+        self.value = default_val
+        self.validator = validator
 
         self.box_bounds = pg.Rect(pos.x, text_size + pos.y + margin, (text_size * max_value_chars) * 0.8, text_size + margin)
         display_text = self.font.render(text, True, text_col)

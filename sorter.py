@@ -32,9 +32,6 @@ class Sorter:
         self.frame_num = 0
         self.operation_num = 0
 
-        # init generation
-        self.generate_items()
-
     def get_sorter(self):
         methods_dic = {
             SortingMethods.BUBBLE: BubbleSorter,
@@ -224,28 +221,26 @@ class MergeSort(MethodSorter):
     def advance(self):
         # if both groups aren't empty, move lowest, else move item in group that isn't empty
         g1, g2 = self.groups[self.on_group], self.groups[self.on_group + 1]
-        add = g1[0] > g2[0] if len(g1) > 0 and len(g2) > 0 else len(g1) == 0  # 0 or 1
+        add = g1[0] > g2[0] if len(g1) > 0 and len(g2) > 0 else not len(g1)  # either 0 or 1
         self.moved_groups[self.on_moved_group].append(self.groups[self.on_group + add].pop(0))
 
         # update items list
-        i = -1
-        for mg in self.moved_groups:
-            for item in mg:
-                self.sorter.items[i := i + 1] = item
-                self.looking_at = self.sorter.items.index(item) + 1
+        li = [item for mg in self.moved_groups for item in mg]
+        self.sorter.items = li + self.sorter.items[len(li):]
+        self.looking_at = self.sorter.items.index(li[-1])
 
         # finish group
-        if len(g1) == 0 and len(g2) == 0:
+        if not len(g1) and not len(g2):
             self.on_group += 2
             self.on_moved_group += 1
 
             # finish row
-            if len(self.groups[-1]) == 0:
+            if not len(self.groups[-1]):
                 self.on_group = self.on_moved_group = 0
                 self.groups = self.moved_groups
 
                 # odd no. of groups, split midd group into two
-                if len(self.groups) % 2 == 1 and len(self.groups) > 1:
+                if len(self.groups) % 2 and len(self.groups) > 1:
                     mid = int((len(self.groups) - 1) / 2)
                     mid_item = self.groups[mid]
                     self.groups[mid] = mid_item[:int(len(mid_item) / 2)]
@@ -284,6 +279,59 @@ class InsertionSort(MethodSorter):
 class QuickSort(MethodSorter):
     def __init__(self, *args):
         super().__init__(*args)
+        if len(self.sorter.items):
+            self.locked_in = set()
+            self.pivot = self.get_pivot()
+            self.left = self.get_left()
+
+    def get_pivot(self):
+        if len(self.locked_in):
+            for i in range(max(self.locked_in), 0, -1):
+                if i not in self.locked_in:
+                    return i
+        return len(self.sorter.items) - 1
+
+    def get_left(self):
+        for i in range(self.pivot, 0, -1):
+            if i in self.locked_in:
+                return i + 1
+        return 0
+
+    def is_in_place(self, index):
+        is_in = self.sorter.items[index] == index + 1
+        if is_in:
+            self.locked_in.add(index)
+        return is_in
 
     def advance(self):
-        pass
+        items = self.sorter.items
+
+        # move items
+        if items[self.left] > items[self.pivot]:
+            if self.left != self.pivot - 1:
+                self.sorter.swap_items(self.pivot, self.pivot - 1)
+            self.sorter.swap_items(self.left, self.pivot)
+            self.pivot -= 1
+        else:
+            self.left += 1
+
+        # lock in pivot item
+        if self.is_in_place(self.pivot):
+            self.pivot -= 1
+            self.left = self.get_left()
+
+            # lock in left item
+            self.is_in_place(self.left)
+
+            # get new positions
+            self.pivot = self.get_pivot()
+            self.left = self.get_left()
+
+        if self.sorter.is_sorted():
+            self.sorter.complete_sorting()
+
+    def get_looking_at_items(self) -> list[int]:
+        return [self.pivot, self.left]
+
+    def get_completed_items(self) -> list[int]:
+        return list(self.locked_in)

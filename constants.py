@@ -22,6 +22,7 @@ class Texts:
     FRAMES_OP = "Frames / Op"
     MARGIN = "Margin"
     SORTING_METHOD = "Sorting Method:"
+    SORT = "Sort"
 
     FRAMES = "frames"
     SINCE_OP = "since op"
