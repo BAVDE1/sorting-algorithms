@@ -22,7 +22,7 @@ class Sorter:
         self.item_num = 1
         self.items = []
 
-        self.sorting_method = SortingMethods.QUICK
+        self.sorting_method = SortingMethods.HEAP
         self.sorter: MethodSorter = self.get_sorter()
 
         self.started = False
@@ -37,7 +37,8 @@ class Sorter:
             SortingMethods.BUBBLE: BubbleSorter,
             SortingMethods.MERGE: MergeSort,
             SortingMethods.INSERTION: InsertionSort,
-            SortingMethods.QUICK: QuickSort
+            SortingMethods.SIMPLE_QUICK: SimpleQuickSort,
+            SortingMethods.HEAP: HeapSort
         }
         if self.sorting_method not in methods_dic:
             raise ValueError(f"method {self.sorting_method} is not registered. look at Sorter.get_sorter()")
@@ -95,7 +96,8 @@ class Sorter:
             self.completed = True
             self.game.stop_sorting()
 
-    def is_sorted(self, li=None):
+    def is_sorted_complete(self, li=None):
+        """ completes the sort if `li` or `items` are sorted """
         li = li if li is not None else self.items
 
         if len(li) != self.item_num:
@@ -105,6 +107,10 @@ class Sorter:
         for i, item in enumerate(li):
             if not i + 1 == len(li):
                 s = s if item + 1 == li[i + 1] else False
+
+        if s:
+            self.items = li
+            self.complete_sorting()
         return s
 
     def update(self):
@@ -202,8 +208,7 @@ class BubbleSorter(MethodSorter):
 
         self.completed_items += 1
         self.looking_at = 0
-        if self.sorter.is_sorted():
-            self.sorter.complete_sorting()
+        self.sorter.is_sorted_complete()
 
 
 class MergeSort(MethodSorter):
@@ -215,7 +220,7 @@ class MergeSort(MethodSorter):
         self.on_moved_group = 0
 
     def gen_moved(self):
-        # generate empty lists
+        """ generate empty lists """
         return [[] for _ in range(round(len(self.groups) / 2))]
 
     def advance(self):
@@ -249,9 +254,7 @@ class MergeSort(MethodSorter):
                 self.moved_groups = self.gen_moved()
 
         # finish sort
-        if self.sorter.is_sorted(self.groups[0]):
-            self.sorter.complete_sorting()
-            self.sorter.items = self.groups[0]
+        self.sorter.is_sorted_complete()
 
     def validator(self, value: int) -> str:
         # even numbers only
@@ -272,11 +275,10 @@ class InsertionSort(MethodSorter):
             self.sorter.swap_items(self.looking_at - 1, self.looking_at)
             self.looking_at -= 1
 
-        if self.sorter.is_sorted():
-            self.sorter.complete_sorting()
+        self.sorter.is_sorted_complete()
 
 
-class QuickSort(MethodSorter):
+class SimpleQuickSort(MethodSorter):
     def __init__(self, *args):
         super().__init__(*args)
         if len(self.sorter.items):
@@ -292,12 +294,14 @@ class QuickSort(MethodSorter):
         return len(self.sorter.items) - 1
 
     def get_left(self):
-        for i in range(self.pivot, 0, -1):
-            if i in self.locked_in:
-                return i + 1
+        if 'pivot' in self.__dict__:
+            for i in range(self.pivot, 0, -1):
+                if i in self.locked_in:
+                    return i + 1
         return 0
 
-    def is_in_place(self, index):
+    def is_in_place_and_lock(self, index):
+        """ returns if index is in correct place, and adds to locked items """
         is_in = self.sorter.items[index] == index + 1
         if is_in:
             self.locked_in.add(index)
@@ -316,22 +320,88 @@ class QuickSort(MethodSorter):
             self.left += 1
 
         # lock in pivot item
-        if self.is_in_place(self.pivot):
+        if self.is_in_place_and_lock(self.pivot):
             self.pivot -= 1
-            self.left = self.get_left()
 
             # lock in left item
-            self.is_in_place(self.left)
+            self.left = self.get_left()
+            self.is_in_place_and_lock(self.left)
 
             # get new positions
             self.pivot = self.get_pivot()
             self.left = self.get_left()
 
-        if self.sorter.is_sorted():
-            self.sorter.complete_sorting()
+        self.sorter.is_sorted_complete()
 
     def get_looking_at_items(self) -> list[int]:
         return [self.pivot, self.left]
 
     def get_completed_items(self) -> list[int]:
         return list(self.locked_in)
+
+
+class HeapSort(MethodSorter):
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.heap_size = 0
+        self.generated_heap = False
+        self.sifted = False
+
+    def get_parent_index(self, child_index):
+        return max(0, math.floor((child_index - 1) / 2))
+
+    def get_child_index(self, parent_index) -> int:
+        child_1 = int((2 * parent_index) + 1)
+        child_2 = int(child_1 + 1)
+
+        if child_2 > self.heap_size:
+            if child_1 > self.heap_size:
+                return parent_index
+            return child_1
+
+        return child_1 if self.sorter.items[child_1] > self.sorter.items[child_2] else child_2
+
+    def sift_up(self, item):
+        """ Sift last elem up the heap """
+        parent_i = self.get_parent_index(item)
+        if self.sorter.items[parent_i] < self.sorter.items[item] and self.heap_size > 0:
+            self.sorter.swap_items(parent_i, item)
+            self.sift_up(parent_i)
+
+    def sift_down(self, item=0):
+        """ Move last elem of heap to root and sift it down the heap """
+        if self.sorter.is_sorted_complete():
+            return
+
+        child_i = self.get_child_index(item)
+        if self.sorter.items[child_i] > self.sorter.items[item]:
+            self.sorter.swap_items(child_i, item)
+            self.sift_down(child_i)
+
+    def advance(self):
+        # generate binary heap
+        if not self.generated_heap:
+            self.sift_up(self.heap_size)
+            self.heap_size += 1
+
+            # finish building heap
+            if self.heap_size == self.sorter.item_num:
+                self.generated_heap = True
+                self.heap_size -= 1
+            return
+
+        # sift down & sort
+        if not self.sifted:
+            self.sift_down()
+        else:
+            self.sorter.swap_items(0, self.heap_size)
+            self.heap_size -= 1
+        self.sifted = not self.sifted
+
+    def get_looking_at_items(self) -> list[int]:
+        children = []
+        parent = 0
+        while (child := self.get_child_index(parent)) != parent:
+            children.append(child)
+            parent = child
+        return [self.heap_size, *children]

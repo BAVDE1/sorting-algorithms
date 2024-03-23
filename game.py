@@ -36,9 +36,9 @@ def get_buttons(game, sorter: Sorter):
 
 def get_inputs(game, sorter: Sorter):
     items_num = Input(Texts.ITEMS_NUM, pg.Vector2(GameValues.SCREEN_WIDTH - 340, 20),
-                      InputOperation(function=sorter.change_item_num), int_only=True, default_val='20', max_val=GameValues.MAX_ITEMS, min_val=GameValues.MIN_ITEMS, validator=sorter.validator)
+                      InputOperation(function=sorter.change_item_num), int_only=True, default_val='100', max_val=GameValues.MAX_ITEMS, min_val=GameValues.MIN_ITEMS, validator=sorter.validator)
     frames_per_op = Input(Texts.FRAMES_OP, pg.Vector2(GameValues.SCREEN_WIDTH - 200, 20),
-                          InputOperation(function=sorter.change_frames_per_op), int_only=True, default_val='2', max_val=GameValues.MAX_FRAMES, min_val=GameValues.MIN_FRAMES)
+                          InputOperation(function=sorter.change_frames_per_op), int_only=True, default_val='1', max_val=GameValues.MAX_FRAMES, min_val=GameValues.MIN_FRAMES)
     margin = Input(Texts.MARGIN, pg.Vector2(GameValues.SCREEN_WIDTH - 80, 20),
                    InputOperation(function=sorter.change_margin), int_only=True, default_val='30', max_val=GameValues.MAX_MARGIN, min_val=GameValues.MIN_MARGIN)
     return [items_num, frames_per_op, margin]
@@ -52,7 +52,8 @@ def get_collection(game, sorter: Sorter) -> Collection:
         Button(SortingMethods.BUBBLE, pg.Vector2(5, 5), BTNOperation(function=sorter.change_sorting_method, method=SortingMethods.BUBBLE), colour=col, text_size=size),
         Button(SortingMethods.MERGE, pg.Vector2(5, 35), BTNOperation(function=sorter.change_sorting_method, method=SortingMethods.MERGE), colour=col, text_size=size),
         Button(SortingMethods.INSERTION, pg.Vector2(5, 65), BTNOperation(function=sorter.change_sorting_method, method=SortingMethods.INSERTION), colour=col, text_size=size),
-        Button(SortingMethods.QUICK, pg.Vector2(5, 95), BTNOperation(function=sorter.change_sorting_method, method=SortingMethods.QUICK), colour=col, text_size=size)
+        Button(SortingMethods.SIMPLE_QUICK, pg.Vector2(5, 95), BTNOperation(function=sorter.change_sorting_method, method=SortingMethods.SIMPLE_QUICK), colour=col, text_size=size),
+        Button(SortingMethods.HEAP, pg.Vector2(5, 125), BTNOperation(function=sorter.change_sorting_method, method=SortingMethods.HEAP), colour=col, text_size=size)
     ])
     return method_collection
 
@@ -84,10 +85,12 @@ class Game:
                     inpt.key_input(event.key)
 
                 # start sorting
-                if should_start and event.key == pg.K_RETURN:
+                if should_start and not self.sorter.started and event.key == pg.K_RETURN:
                     if self.sorter.completed:
                         self.sorter.generate_items()
                     self.start_sorting()
+                elif should_start and self.sorter.started:
+                    self.sorter.stop_sorting()
 
             if event.type == pg.KEYUP:
                 self.keys = pg.key.get_pressed()

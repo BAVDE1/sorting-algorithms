@@ -8,7 +8,7 @@ class SortingMethods:
     BUBBLE = "Bubble"
     MERGE = "Merge"
     INSERTION = "Insertion"
-    QUICK = "Quick"
+    SIMPLE_QUICK = "Simple Quick"
     HEAP = "Heap"
     RADIX = "Radix"
 
@@ -28,6 +28,7 @@ class Texts:
     SINCE_OP = "since op"
     OPERATIONS = "operations"
     SORTED = "sorted"
+    AVERAGE_OP = "average operations"
 
 
 class GameValues:
