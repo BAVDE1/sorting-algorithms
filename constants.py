@@ -6,7 +6,9 @@ def get_middle(pos_x, width_1, width_2) -> int:
 
 class SortingMethods:
     BUBBLE = "Bubble"
+    COMB = "Comb"
     INSERTION = "Insertion"
+    SHELL = "Shell"
     COCKTAIL = "Cocktail Shaker"
     MERGE = "Merge"
     SIMPLE_QUICK = "Simple Quick"

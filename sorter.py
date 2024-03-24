@@ -22,7 +22,7 @@ class Sorter:
         self.item_num = 1
         self.items = []
 
-        self.sorting_method = SortingMethods.COCKTAIL
+        self.sorting_method = SortingMethods.COMB
         self.sorter: MethodSorter = self.get_sorter()
 
         self.started = False
@@ -35,7 +35,9 @@ class Sorter:
     def get_sorter(self):
         methods_dic = {
             SortingMethods.BUBBLE: BubbleSorter,
+            SortingMethods.COMB: CombSort,
             SortingMethods.INSERTION: InsertionSort,
+            SortingMethods.SHELL: ShellSort,
             SortingMethods.COCKTAIL: CocktailSort,
             SortingMethods.MERGE: MergeSort,
             SortingMethods.SIMPLE_QUICK: SimpleQuickSort,
@@ -213,6 +215,31 @@ class BubbleSorter(MethodSorter):
         self.sorter.is_sorted_complete()
 
 
+class CombSort(MethodSorter):
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.gap = self.sorter.item_num
+        self.shrink_factor = 1.3
+
+    def right_inx(self):
+        return self.looking_at + self.gap - 1
+
+    def advance(self):
+        if self.sorter.items[self.looking_at] > self.sorter.items[self.right_inx()]:
+            self.sorter.swap_items(self.looking_at, self.right_inx())
+        self.looking_at += 1
+
+        # reduce gap size
+        if self.right_inx() >= self.sorter.item_num:
+            self.looking_at = 0
+            self.gap = round(self.gap / self.shrink_factor)
+
+        self.sorter.is_sorted_complete()
+
+    def get_looking_at_items(self) -> list[int]:
+        return [self.looking_at, self.right_inx()]
+
+
 class InsertionSort(MethodSorter):
     def __init__(self, *args):
         super().__init__(*args)
@@ -228,6 +255,11 @@ class InsertionSort(MethodSorter):
             self.looking_at -= 1
 
         self.sorter.is_sorted_complete()
+
+
+class ShellSort(MethodSorter):
+    def __init__(self, *args):
+        super().__init__(*args)
 
 
 class CocktailSort(MethodSorter):
