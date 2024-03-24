@@ -6,8 +6,9 @@ def get_middle(pos_x, width_1, width_2) -> int:
 
 class SortingMethods:
     BUBBLE = "Bubble"
-    MERGE = "Merge"
     INSERTION = "Insertion"
+    COCKTAIL = "Cocktail Shaker"
+    MERGE = "Merge"
     SIMPLE_QUICK = "Simple Quick"
     HEAP = "(Binary) Heap"
     RADIX = "(LSD) Radix"

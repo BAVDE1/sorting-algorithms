@@ -22,7 +22,7 @@ class Sorter:
         self.item_num = 1
         self.items = []
 
-        self.sorting_method = SortingMethods.RADIX
+        self.sorting_method = SortingMethods.COCKTAIL
         self.sorter: MethodSorter = self.get_sorter()
 
         self.started = False
@@ -35,8 +35,9 @@ class Sorter:
     def get_sorter(self):
         methods_dic = {
             SortingMethods.BUBBLE: BubbleSorter,
-            SortingMethods.MERGE: MergeSort,
             SortingMethods.INSERTION: InsertionSort,
+            SortingMethods.COCKTAIL: CocktailSort,
+            SortingMethods.MERGE: MergeSort,
             SortingMethods.SIMPLE_QUICK: SimpleQuickSort,
             SortingMethods.HEAP: HeapSort,
             SortingMethods.RADIX: RadixSort
@@ -212,6 +213,47 @@ class BubbleSorter(MethodSorter):
         self.sorter.is_sorted_complete()
 
 
+class InsertionSort(MethodSorter):
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.up_to_column = 0
+        self.looking_at = 1
+
+    def advance(self):
+        if (self.sorter.items[self.looking_at] > self.sorter.items[self.looking_at - 1]) or self.looking_at == 0:
+            self.up_to_column += 1
+            self.looking_at = self.up_to_column + 1
+        else:
+            self.sorter.swap_items(self.looking_at - 1, self.looking_at)
+            self.looking_at -= 1
+
+        self.sorter.is_sorted_complete()
+
+
+class CocktailSort(MethodSorter):
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.ascending = True
+        self.completed = []
+
+    def advance(self):
+        asc_int = int(self.ascending * 2) - 1
+
+        # swap
+        a, b = self.looking_at, self.looking_at + asc_int
+        if (self.ascending and self.sorter.items[a] > self.sorter.items[b]) or (not self.ascending and self.sorter.items[a] < self.sorter.items[b]):
+            self.sorter.swap_items(a, b)
+        self.looking_at += asc_int
+
+        # switch directions
+        if self.looking_at in self.completed or self.looking_at == self.sorter.item_num - 1 or self.looking_at == 0:
+            self.looking_at -= asc_int
+            self.completed.append(self.looking_at)
+            self.ascending = not self.ascending
+
+        self.sorter.is_sorted_complete()
+
+
 class MergeSort(MethodSorter):
     def __init__(self, *args):
         super().__init__(*args)
@@ -260,23 +302,6 @@ class MergeSort(MethodSorter):
     def validator(self, value: int) -> str:
         # even numbers only
         return str(int(value) + (value % 2))
-
-
-class InsertionSort(MethodSorter):
-    def __init__(self, *args):
-        super().__init__(*args)
-        self.up_to_column = 0
-        self.looking_at = 1
-
-    def advance(self):
-        if (self.sorter.items[self.looking_at] > self.sorter.items[self.looking_at - 1]) or self.looking_at == 0:
-            self.up_to_column += 1
-            self.looking_at = self.up_to_column + 1
-        else:
-            self.sorter.swap_items(self.looking_at - 1, self.looking_at)
-            self.looking_at -= 1
-
-        self.sorter.is_sorted_complete()
 
 
 class SimpleQuickSort(MethodSorter):

@@ -4,9 +4,11 @@ admittedly unoptimised demonstration of various sorting algorithms.
 
 * bubble
 * insertion
+* cocktail
 * merge
-* simple Quick
+* quick (simple)
 * heap
+* radix (least significant digit)
 
 variable items & frames / operation
 
