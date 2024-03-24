@@ -6,10 +6,6 @@ from sorter import Sorter
 from constants import *
 
 
-def test():
-    print("test!!~~`1")
-
-
 def get_render_method(pos: pg.Vector2, sorter, buttons, collection):
     font_a = pg.font.SysFont(GameValues.FONT, 20)
     font_b = pg.font.SysFont(GameValues.FONT, 30)
