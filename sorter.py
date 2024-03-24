@@ -22,7 +22,7 @@ class Sorter:
         self.item_num = 1
         self.items = []
 
-        self.sorting_method = SortingMethods.COMB
+        self.sorting_method = SortingMethods.SHELL
         self.sorter: MethodSorter = self.get_sorter()
 
         self.started = False
@@ -260,6 +260,9 @@ class InsertionSort(MethodSorter):
 class ShellSort(MethodSorter):
     def __init__(self, *args):
         super().__init__(*args)
+
+    def advance(self):
+        pass
 
 
 class CocktailSort(MethodSorter):

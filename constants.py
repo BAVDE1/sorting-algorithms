@@ -11,8 +11,8 @@ class SortingMethods:
     SHELL = "Shell"
     COCKTAIL = "Cocktail Shaker"
     MERGE = "Merge"
-    SIMPLE_QUICK = "Simple Quick"
-    HEAP = "(Binary) Heap"
+    SIMPLE_QUICK = "(Simple) Quick"
+    HEAP = "Heap"
     RADIX = "(LSD) Radix"
 
 

@@ -1,3 +1,5 @@
+from pydub.generators import Sine
+from pydub.playback import play
 import pygame as pg
 from interactable import BTNOperation, Button, ButtonToggle, Input, InputOperation, Collection
 from sorter import Sorter
@@ -57,7 +59,7 @@ def get_collection(game, sorter: Sorter) -> Collection:
         Button(SortingMethods.MERGE, pg.Vector2(5, 155), BTNOperation(function=sorter.change_sorting_method, method=SortingMethods.MERGE), colour=col, text_size=size),
         Button(SortingMethods.SIMPLE_QUICK, pg.Vector2(5, 185), BTNOperation(function=sorter.change_sorting_method, method=SortingMethods.SIMPLE_QUICK), colour=col, text_size=size),
         Button(SortingMethods.HEAP, pg.Vector2(5, 215), BTNOperation(function=sorter.change_sorting_method, method=SortingMethods.HEAP), colour=col, text_size=size),
-        Button(SortingMethods.RADIX, pg.Vector2(5, 245), BTNOperation(function=sorter.change_sorting_method, method=SortingMethods.RADIX), colour=col, text_size=size)
+        Button(SortingMethods.RADIX, pg.Vector2(5, 275), BTNOperation(function=sorter.change_sorting_method, method=SortingMethods.RADIX), colour=col, text_size=size)
     ])
     return method_collection
 
