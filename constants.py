@@ -9,8 +9,8 @@ class SortingMethods:
     MERGE = "Merge"
     INSERTION = "Insertion"
     SIMPLE_QUICK = "Simple Quick"
-    HEAP = "Heap"
-    RADIX = "Radix"
+    HEAP = "(Binary) Heap"
+    RADIX = "(LSD) Radix"
 
 
 class Texts:

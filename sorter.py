@@ -22,7 +22,7 @@ class Sorter:
         self.item_num = 1
         self.items = []
 
-        self.sorting_method = SortingMethods.HEAP
+        self.sorting_method = SortingMethods.RADIX
         self.sorter: MethodSorter = self.get_sorter()
 
         self.started = False
@@ -38,7 +38,8 @@ class Sorter:
             SortingMethods.MERGE: MergeSort,
             SortingMethods.INSERTION: InsertionSort,
             SortingMethods.SIMPLE_QUICK: SimpleQuickSort,
-            SortingMethods.HEAP: HeapSort
+            SortingMethods.HEAP: HeapSort,
+            SortingMethods.RADIX: RadixSort
         }
         if self.sorting_method not in methods_dic:
             raise ValueError(f"method {self.sorting_method} is not registered. look at Sorter.get_sorter()")
@@ -379,7 +380,7 @@ class HeapSort(MethodSorter):
             self.sift_down(child_i)
 
     def advance(self):
-        # generate binary heap
+        # generate binary heap (heapify by sifting up)
         if not self.generated_heap:
             self.sift_up(self.heap_size)
             self.heap_size += 1
@@ -405,3 +406,35 @@ class HeapSort(MethodSorter):
             children.append(child)
             parent = child
         return [self.heap_size, *children]
+
+
+class RadixSort(MethodSorter):
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.groups = self.create_empty_groups()
+        self.on_digit = 1
+
+    def create_empty_groups(self):
+        return [[] for _ in range(10)]
+
+    def get_digit(self, number):
+        num, digit = str(number), self.on_digit
+        return int(num[-digit]) if len(num) >= digit else 0
+
+    def advance(self):
+        # put item in group
+        item = self.sorter.items[self.looking_at]
+        self.groups[self.get_digit(item)].append(item)
+        self.looking_at += 1
+
+        # update items
+        li = [item for group in self.groups for item in group]
+        self.sorter.items = li + self.sorter.items[len(li):]
+
+        # finish sorting on digit
+        if self.looking_at == self.sorter.item_num:
+            self.looking_at = 0
+            self.on_digit += 1
+            self.groups = self.create_empty_groups()
+
+        self.sorter.is_sorted_complete()
