@@ -22,6 +22,7 @@ class Sorter:
         self.items = []
         self.old_items = []
         self.old_looking_at = []
+        self.old_completed = []
 
         self.sorting_method = SortingMethods.SIMPLE_QUICK
         self.sorter: MethodSorter = self.get_sorter()
@@ -158,10 +159,13 @@ class Sorter:
         diff = []
         new_l_a = self.sorter.get_looking_at_items()
         old_l_a = self.old_looking_at
+        new_c = self.sorter.get_completed_items()
+        old_c = self.old_completed
 
         for i, item in enumerate(self.items):
             if i + 1 >= len(self.old_items) or item != self.old_items[i] or \
-                    (i in new_l_a and i not in old_l_a) or (i in old_l_a and i not in new_l_a):
+                    (i in new_l_a and i not in old_l_a) or (i in old_l_a and i not in new_l_a) or \
+                    (i in new_c and i not in old_c) or (i in old_c and i not in new_c):
                 diff.append([i, item])
         return diff
 
@@ -176,7 +180,9 @@ class Sorter:
         max_y = (self.size.y - self.margin) - (bar_width * self.item_num)
 
         # any differences
-        if bar_width >= 1 and (self.items != self.old_items or self.sorter.get_looking_at_items() != self.old_looking_at):
+        if bar_width >= 1 and (self.items != self.old_items or
+                               self.sorter.get_looking_at_items() != self.old_looking_at or
+                               self.sorter.get_completed_items() != self.old_completed):
             for i, item in self.get_difference():
                 x = self.margin + (i * bar_width)
                 y = (self.size.y - self.margin) - (bar_width * item)
@@ -195,6 +201,7 @@ class Sorter:
         # old items
         self.old_items = list(self.items)
         self.old_looking_at = self.sorter.get_looking_at_items()
+        self.old_completed = self.sorter.get_completed_items()
         self.previous_screen.fill(Colours.BG_COL)
         self.previous_screen.blit(self.sorter_screen, (0, 0))
 
