@@ -14,12 +14,16 @@ class Sorter:
         self.margin = 50
         self.outline_rect = pg.Rect(0, 0, self.size.x, self.size.y)
         self.sorter_screen = pg.Surface(self.size)
+        self.previous_screen = pg.Surface(self.size)
+        self.previous_screen.fill(Colours.BG_COL)
         self.font = pg.font.SysFont(GameValues.FONT, 20)
 
         self.item_num = 1
         self.items = []
+        self.old_items = []
+        self.old_looking_at = []
 
-        self.sorting_method = SortingMethods.SHELL
+        self.sorting_method = SortingMethods.SIMPLE_QUICK
         self.sorter: MethodSorter = self.get_sorter()
 
         self.started = False
@@ -54,6 +58,7 @@ class Sorter:
             self.started = False
             self.frame_num = 0
             self.operation_num = 0
+            self.old_items = ['_' for _ in range(self.item_num)]
 
     def validator(self, value) -> str:
         return self.sorter.validator(value)
@@ -135,40 +140,65 @@ class Sorter:
         self.items[b] = item_a
 
     def render_text(self, screen: pg.Surface):
-        col = (100, 100, 100)
+        col = Colours.GREY
         frames = self.font.render(f"{Texts.FRAMES}: {self.frame_num}", False, col)
         since_op = self.font.render(f"{Texts.SINCE_OP}: {self.frames_since_op}", False, col)
         operations = self.font.render(f"{Texts.OPERATIONS}: {self.operation_num}", False, col)
         srted = self.font.render(f"{Texts.SORTED}: {len(self.sorter.get_completed_items())}/{self.item_num}", False, col)
 
-        screen.blit(frames, pg.Vector2(10, self.sorter_screen.get_height() - 25))
-        screen.blit(operations, pg.Vector2(150, self.sorter_screen.get_height() - 25))
-        screen.blit(since_op, pg.Vector2(320, self.sorter_screen.get_height() - 25))
-        screen.blit(srted, pg.Vector2(450, self.sorter_screen.get_height() - 25))
+        height = self.sorter_screen.get_height()
+        y = height - 25
+        pg.draw.rect(screen, Colours.BG_COL, pg.Rect(0, y, self.sorter_screen.get_width(), height))
+        screen.blit(frames, pg.Vector2(10, y))
+        screen.blit(operations, pg.Vector2(150, y))
+        screen.blit(since_op, pg.Vector2(320, y))
+        screen.blit(srted, pg.Vector2(450, y))
+
+    def get_difference(self):
+        diff = []
+        new_l_a = self.sorter.get_looking_at_items()
+        old_l_a = self.old_looking_at
+
+        for i, item in enumerate(self.items):
+            if i + 1 >= len(self.old_items) or item != self.old_items[i] or \
+                    (i in new_l_a and i not in old_l_a) or (i in old_l_a and i not in new_l_a):
+                diff.append([i, item])
+        return diff
 
     def render(self, screen: pg.Surface):
-        self.sorter_screen.fill(GameValues.BG_COL)
-
-        pg.draw.rect(self.sorter_screen, (255, 255, 255), self.outline_rect, 1)
+        self.sorter_screen.fill(Colours.BG_COL)
+        self.sorter_screen.blit(self.previous_screen, (0, 0))
+        self.render_text(self.sorter_screen)
+        pg.draw.rect(self.sorter_screen, Colours.WHITE, self.outline_rect, 1)
 
         items_width = self.size.x - (self.margin * 2)
         bar_width = items_width / self.item_num
-        if bar_width >= 1:
-            for i, item in enumerate(self.items):
+        max_y = (self.size.y - self.margin) - (bar_width * self.item_num)
+
+        # any differences
+        if bar_width >= 1 and (self.items != self.old_items or self.sorter.get_looking_at_items() != self.old_looking_at):
+            for i, item in self.get_difference():
                 x = self.margin + (i * bar_width)
                 y = (self.size.y - self.margin) - (bar_width * item)
 
                 def get_col():
+                    if self.completed or i in self.sorter.get_completed_items() and i not in self.sorter.get_looking_at_items():
+                        return Colours.GREEN
                     if not self.completed and i in self.sorter.get_looking_at_items():
-                        return 255, 100, 100
-                    if self.completed or i in self.sorter.get_completed_items():
-                        return 100, 255, 100
-                    return 255, 255, 255
+                        return Colours.RED
+                    return Colours.WHITE
 
-                pg.draw.rect(self.sorter_screen, get_col(), pg.Rect(x, y, math.ceil(bar_width), math.ceil(bar_width * item)))
-                self.render_text(self.sorter_screen)
+                bar_w = math.ceil(bar_width)
+                pg.draw.rect(self.sorter_screen, Colours.BG_COL, pg.Rect(x, max_y, bar_w, math.ceil(bar_width * self.item_num)))
+                pg.draw.rect(self.sorter_screen, get_col(), pg.Rect(x, y, bar_w, math.ceil(bar_width * item)))
 
-        # final
+        # old items
+        self.old_items = list(self.items)
+        self.old_looking_at = self.sorter.get_looking_at_items()
+        self.previous_screen.fill(Colours.BG_COL)
+        self.previous_screen.blit(self.sorter_screen, (0, 0))
+
+        # final rendering
         screen.blit(self.sorter_screen, self.pos)
 
 

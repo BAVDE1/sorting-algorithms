@@ -82,7 +82,7 @@ class Collection:
             btn._active = val
 
     def render(self, screen: pg.Surface):
-        self.coll_screen.fill(GameValues.BG_COL)
+        self.coll_screen.fill(Colours.BG_COL)
         if self.toggled:
             pg.draw.rect(self.coll_screen, (255, 255, 255), pg.Rect(0, 0, self.size.x, self.size.y), 2)
             for btn in self.buttons:

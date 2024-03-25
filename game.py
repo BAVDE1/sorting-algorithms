@@ -1,3 +1,4 @@
+import ffmpeg
 from pydub.generators import Sine
 from pydub.playback import play
 import pygame as pg
@@ -34,9 +35,9 @@ def get_buttons(game, sorter: Sorter):
 
 def get_inputs(game, sorter: Sorter):
     items_num = Input(Texts.ITEMS_NUM, pg.Vector2(GameValues.SCREEN_WIDTH - 340, 20),
-                      InputOperation(function=sorter.change_item_num), int_only=True, default_val='20', max_val=GameValues.MAX_ITEMS, min_val=GameValues.MIN_ITEMS, validator=sorter.validator)
+                      InputOperation(function=sorter.change_item_num), int_only=True, default_val='200', max_val=GameValues.MAX_ITEMS, min_val=GameValues.MIN_ITEMS, validator=sorter.validator)
     frames_per_op = Input(Texts.FRAMES_OP, pg.Vector2(GameValues.SCREEN_WIDTH - 200, 20),
-                          InputOperation(function=sorter.change_frames_per_op), int_only=True, default_val='10', max_val=GameValues.MAX_FRAMES, min_val=GameValues.MIN_FRAMES)
+                          InputOperation(function=sorter.change_frames_per_op), int_only=True, default_val='1', max_val=GameValues.MAX_FRAMES, min_val=GameValues.MIN_FRAMES)
     margin = Input(Texts.MARGIN, pg.Vector2(GameValues.SCREEN_WIDTH - 80, 20),
                    InputOperation(function=sorter.change_margin), int_only=True, default_val='30', max_val=GameValues.MAX_MARGIN, min_val=GameValues.MIN_MARGIN)
     return [items_num, frames_per_op, margin]
@@ -140,8 +141,8 @@ class Game:
         self.inputs[0].change_value(value)
 
     def render(self):
-        self.final_screen.fill(GameValues.BG_COL)
-        self.canvas_screen.fill(GameValues.BG_COL)
+        self.final_screen.fill(Colours.BG_COL)
+        self.canvas_screen.fill(Colours.BG_COL)
 
         self.collection.render(self.canvas_screen)
         for button in self.buttons:

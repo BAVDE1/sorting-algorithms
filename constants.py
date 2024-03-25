@@ -41,12 +41,18 @@ class GameValues:
     MIN_FRAMES = 0
     MIN_MARGIN = 30
 
-    MAX_ITEMS = 500
+    MAX_ITEMS = 540
     MAX_FRAMES = 100
     MAX_MARGIN = 100
-
-    BG_COL = (0, 5, 5)
 
     SCREEN_WIDTH = 800
     SCREEN_HEIGHT = 800
     RES_MUL = 1
+
+
+class Colours:
+    BG_COL = (0, 5, 5)
+    WHITE = (255, 255, 255)
+    GREEN = (100, 255, 100)
+    RED = (255, 100, 100)
+    GREY = (100, 100, 100)
