@@ -102,6 +102,7 @@ class Sorter:
             self.started = False
             self.completed = True
             self.game.stop_sorting()
+            self.render(self.sorter_screen, True)  # re-render
 
     def is_sorted_complete(self, li=None):
         """ completes the sort if `li` or `items` are sorted """
@@ -169,7 +170,7 @@ class Sorter:
                 diff.append([i, item])
         return diff
 
-    def render(self, screen: pg.Surface):
+    def render(self, screen: pg.Surface, re_render_all=False):
         self.sorter_screen.fill(Colours.BG_COL)
         self.sorter_screen.blit(self.previous_screen, (0, 0))
         self.render_text(self.sorter_screen)
@@ -182,8 +183,9 @@ class Sorter:
         # any differences
         if bar_width >= 1 and (self.items != self.old_items or
                                self.sorter.get_looking_at_items() != self.old_looking_at or
-                               self.sorter.get_completed_items() != self.old_completed):
-            for i, item in self.get_difference():
+                               self.sorter.get_completed_items() != self.old_completed) or re_render_all:
+            lis = enumerate(self.items) if re_render_all else self.get_difference()
+            for i, item in lis:
                 x = self.margin + (i * bar_width)
                 y = (self.size.y - self.margin) - (bar_width * item)
 
