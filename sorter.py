@@ -1,10 +1,7 @@
 import math
-import time
 
 import pygame as pg
 import random
-
-import setuptools
 
 from constants import *
 
