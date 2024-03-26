@@ -296,8 +296,10 @@ class InsertionSort(MethodSorter):
 class ShellSort(MethodSorter):
     def __init__(self, *args):
         super().__init__(*args)
+        self.gap = math.ceil(self.sorter.item_num / 2)
 
     def advance(self):
+        items =
         pass
 
 

@@ -1,4 +1,3 @@
-import ffmpeg
 from pydub.generators import Sine
 from pydub.playback import play
 import pygame as pg
