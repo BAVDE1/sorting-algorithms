@@ -26,6 +26,7 @@ class Texts:
     MARGIN = "Margin"
     SORTING_METHOD = "Sorting Method:"
     SORT = "Sort"
+    SOUND = "Play sound (will lag)"
 
     FRAMES = "frames"
     SINCE_OP = "since op"

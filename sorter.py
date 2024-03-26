@@ -1,7 +1,9 @@
 import math
-
+import time
+import threading
 import pygame as pg
 import random
+from pysinewave import SineWave
 
 from constants import *
 
@@ -18,13 +20,16 @@ class Sorter:
         self.previous_screen.fill(Colours.BG_COL)
         self.font = pg.font.SysFont(GameValues.FONT, 20)
 
+        self.max_sound_pitch = 20
+        self.sound_on = False
+
         self.item_num = 1
         self.items = []
         self.old_items = []
         self.old_looking_at = []
         self.old_completed = []
 
-        self.sorting_method = SortingMethods.SIMPLE_QUICK
+        self.sorting_method = SortingMethods.BUBBLE
         self.sorter: MethodSorter = self.get_sorter()
 
         self.started = False
@@ -136,10 +141,29 @@ class Sorter:
             elif self.frames_since_op >= self.frames_per_op:
                 adv()
 
-    def swap_items(self, a, b):
+    def swap_items(self, a, b, play_sound=True, sound_b=False):
         item_a, item_b = self.items[a], self.items[b]
         self.items[a] = item_b
         self.items[b] = item_a
+
+        if play_sound:
+            self.play_sound(self.items[b if sound_b else a])
+
+    def toggle_sound(self):
+        self.sound_on = not self.sound_on
+
+    def play_sound(self, number):
+        def sound_thread(sine):
+            sine.play()
+            sine.set_volume(-100)
+            time.sleep(.4)
+            sine.stop()
+
+        if self.sound_on:
+            pitch = (number / self.item_num) * self.max_sound_pitch
+            sine_wave = SineWave(pitch=pitch, decibels=0, decibels_per_second=500)
+            t1 = threading.Thread(target=sound_thread, args=(sine_wave,))
+            t1.start()
 
     def render_text(self, screen: pg.Surface):
         col = Colours.GREY
@@ -204,7 +228,6 @@ class Sorter:
         self.old_items = list(self.items)
         self.old_looking_at = self.sorter.get_looking_at_items()
         self.old_completed = self.sorter.get_completed_items()
-        self.previous_screen.fill(Colours.BG_COL)
         self.previous_screen.blit(self.sorter_screen, (0, 0))
 
         # final rendering
@@ -287,7 +310,7 @@ class InsertionSort(MethodSorter):
             self.up_to_column += 1
             self.looking_at = self.up_to_column + 1
         else:
-            self.sorter.swap_items(self.looking_at - 1, self.looking_at)
+            self.sorter.swap_items(self.looking_at - 1, self.looking_at, play_sound=bool(self.looking_at % 2), sound_b=True)
             self.looking_at -= 1
 
         self.sorter.is_sorted_complete()
@@ -299,7 +322,6 @@ class ShellSort(MethodSorter):
         self.gap = math.ceil(self.sorter.item_num / 2)
 
     def advance(self):
-        items =
         pass
 
 
@@ -315,7 +337,7 @@ class CocktailSort(MethodSorter):
         # swap
         a, b = self.looking_at, self.looking_at + asc_int
         if (self.ascending and self.sorter.items[a] > self.sorter.items[b]) or (not self.ascending and self.sorter.items[a] < self.sorter.items[b]):
-            self.sorter.swap_items(a, b)
+            self.sorter.swap_items(a, b, play_sound=bool(b % 2))
         self.looking_at += asc_int
 
         # switch directions
@@ -349,6 +371,8 @@ class MergeSort(MethodSorter):
         li = [item for mg in self.moved_groups for item in mg]
         self.sorter.items = li + self.sorter.items[len(li):]
         self.looking_at = self.sorter.items.index(li[-1])
+        if li[-1] % 2:
+            self.sorter.play_sound(li[-1])  # sound on every odd to reduce lag
 
         # finish group
         if not len(g1) and not len(g2):
@@ -412,7 +436,7 @@ class SimpleQuickSort(MethodSorter):
         # move items
         if items[self.left] > items[self.pivot]:
             if self.left != self.pivot - 1:
-                self.sorter.swap_items(self.pivot, self.pivot - 1)
+                self.sorter.swap_items(self.pivot, self.pivot - 1, play_sound=False)
             self.sorter.swap_items(self.left, self.pivot)
             self.pivot -= 1
         else:
@@ -464,7 +488,7 @@ class HeapSort(MethodSorter):
         """ Sift last elem up the heap """
         parent_i = self.get_parent_index(item)
         if self.sorter.items[parent_i] < self.sorter.items[item] and self.heap_size > 0:
-            self.sorter.swap_items(parent_i, item)
+            self.sorter.swap_items(parent_i, item, play_sound=False)
             self.sift_up(parent_i)
 
     def sift_down(self, item=0):
@@ -474,7 +498,7 @@ class HeapSort(MethodSorter):
 
         child_i = self.get_child_index(item)
         if self.sorter.items[child_i] > self.sorter.items[item]:
-            self.sorter.swap_items(child_i, item)
+            self.sorter.swap_items(child_i, item, play_sound=False)
             self.sift_down(child_i)
 
     def advance(self):
@@ -493,7 +517,7 @@ class HeapSort(MethodSorter):
         if not self.sifted:
             self.sift_down()
         else:
-            self.sorter.swap_items(0, self.heap_size)
+            self.sorter.swap_items(0, self.heap_size, sound_b=True)
             self.heap_size -= 1
         self.sifted = not self.sifted
 
@@ -523,6 +547,7 @@ class RadixSort(MethodSorter):
         # put item in group
         item = self.sorter.items[self.looking_at]
         self.groups[self.get_digit(item)].append(item)
+        self.sorter.play_sound(item)
         self.looking_at += 1
 
         # update items

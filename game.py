@@ -1,5 +1,3 @@
-from pydub.generators import Sine
-from pydub.playback import play
 import pygame as pg
 from interactable import BTNOperation, Button, ButtonToggle, Input, InputOperation, Collection
 from sorter import Sorter
@@ -29,12 +27,13 @@ def get_buttons(game, sorter: Sorter):
     stop = Button(Texts.STOP, pg.Vector2(GameValues.SCREEN_WIDTH - 140, GameValues.SCREEN_HEIGHT - 80),
                   BTNOperation(sorter.stop_sorting), colour=(255, 100, 100), outline=2, hidden=True)
     re_gen = Button(Texts.RE_GEN, pg.Vector2(GameValues.SCREEN_HEIGHT - 230, GameValues.SCREEN_HEIGHT - 80), BTNOperation(sorter.generate_items), text_size=20, outline=2)
-    return [start, stop, re_gen]
+    sound = ButtonToggle(Texts.SOUND, pg.Vector2(10, GameValues.SCREEN_HEIGHT - 50), BTNOperation(sorter.toggle_sound), text_size=18)
+    return [start, stop, re_gen, sound]
 
 
 def get_inputs(game, sorter: Sorter):
     items_num = Input(Texts.ITEMS_NUM, pg.Vector2(GameValues.SCREEN_WIDTH - 340, 20),
-                      InputOperation(function=sorter.change_item_num), int_only=True, default_val='200', max_val=GameValues.MAX_ITEMS, min_val=GameValues.MIN_ITEMS, validator=sorter.validator)
+                      InputOperation(function=sorter.change_item_num), int_only=True, default_val='50', max_val=GameValues.MAX_ITEMS, min_val=GameValues.MIN_ITEMS, validator=sorter.validator)
     frames_per_op = Input(Texts.FRAMES_OP, pg.Vector2(GameValues.SCREEN_WIDTH - 200, 20),
                           InputOperation(function=sorter.change_frames_per_op), int_only=True, default_val='1', max_val=GameValues.MAX_FRAMES, min_val=GameValues.MIN_FRAMES)
     margin = Input(Texts.MARGIN, pg.Vector2(GameValues.SCREEN_WIDTH - 80, 20),
@@ -87,12 +86,13 @@ class Game:
                     inpt.key_input(event.key)
 
                 # start sorting
-                if should_start and not self.sorter.started and event.key == pg.K_RETURN:
-                    if self.sorter.completed:
-                        self.sorter.generate_items()
-                    self.start_sorting()
-                elif should_start and self.sorter.started:
-                    self.sorter.stop_sorting()
+                if event.key == pg.K_RETURN:
+                    if should_start and not self.sorter.started:
+                        if self.sorter.completed:
+                            self.sorter.generate_items()
+                        self.start_sorting()
+                    elif should_start and self.sorter.started:
+                        self.sorter.stop_sorting()
 
             if event.type == pg.KEYUP:
                 self.keys = pg.key.get_pressed()

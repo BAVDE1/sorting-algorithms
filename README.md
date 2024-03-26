@@ -14,14 +14,10 @@ admittedly unoptimised demonstration of various sorting algorithms.
 
 variable items & frames / operation
 
-made from 17/3/2024 - present (8 days) (8 sorting methods)
+made from 17/3/2024 - present (10 days) (whole program & 8 sorting methods)
 
-### requirements
+### stuff
 
-python `3.11`
-
-```shell
-pip install pygame
- ```
+python 3.11, pygame
 
 run `main.py`
