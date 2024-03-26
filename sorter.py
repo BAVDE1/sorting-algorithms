@@ -1,9 +1,7 @@
 import math
-import time
-import threading
 import pygame as pg
 import random
-from pysinewave import SineWave
+from sound import SoundManager
 
 from constants import *
 
@@ -20,8 +18,7 @@ class Sorter:
         self.previous_screen.fill(Colours.BG_COL)
         self.font = pg.font.SysFont(GameValues.FONT, 20)
 
-        self.max_sound_pitch = 20
-        self.sound_on = False
+        self.sound_manager = SoundManager()
 
         self.item_num = 1
         self.items = []
@@ -150,20 +147,11 @@ class Sorter:
             self.play_sound(self.items[b if sound_b else a])
 
     def toggle_sound(self):
-        self.sound_on = not self.sound_on
+        self.sound_manager.toggle_sound()
 
     def play_sound(self, number):
-        def sound_thread(sine):
-            sine.play()
-            sine.set_volume(-100)
-            time.sleep(.4)
-            sine.stop()
-
-        if self.sound_on:
-            pitch = (number / self.item_num) * self.max_sound_pitch
-            sine_wave = SineWave(pitch=pitch, decibels=0, decibels_per_second=500)
-            t1 = threading.Thread(target=sound_thread, args=(sine_wave,))
-            t1.start()
+        pass
+        # self.sound_manager.try_play_sound()
 
     def render_text(self, screen: pg.Surface):
         col = Colours.GREY

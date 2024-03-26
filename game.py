@@ -2,6 +2,7 @@ import pygame as pg
 from interactable import BTNOperation, Button, ButtonToggle, Input, InputOperation, Collection
 from sorter import Sorter
 from constants import *
+from sound import SoundManager
 
 
 def get_render_method(pos: pg.Vector2, sorter, buttons, collection):
@@ -75,6 +76,8 @@ class Game:
         self.inputs = get_inputs(self, self.sorter)
         self.render_method = get_render_method(pg.Vector2(10, 10), self.sorter, self.buttons, self.collection)
 
+        self.sound_manager = SoundManager()
+
     def events(self):
         for event in pg.event.get():
             # keydown input
@@ -93,6 +96,9 @@ class Game:
                         self.start_sorting()
                     elif should_start and self.sorter.started:
                         self.sorter.stop_sorting()
+
+                if event.key == pg.K_m:
+                    self.sound_manager.try_play_sound()
 
             if event.type == pg.KEYUP:
                 self.keys = pg.key.get_pressed()
