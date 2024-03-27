@@ -1,22 +1,28 @@
-import time
-import threading
 from pysinewave import SineWave
 
 
 class SoundManager:
     def __init__(self):
-        self.max_threads = 5
-        self.threads = []
-
-        self.max_sound_pitch = 20
         self.sound_on = False
 
-    def toggle_sound(self):
-        self.sound_on = not self.sound_on
+        self.pitch_upper_limit = 20
+        self.decibels_default = 20
+        self.decibels_lower_limit = -150
 
-    def try_play_sound(self, item_num, number):
+        self.sine_wave = SineWave(pitch=0, decibels=self.decibels_lower_limit, decibels_per_second=1000, pitch_per_second=1000)
 
+        # init
+        self.toggle_sound(False)
+        self.sine_wave.play()
 
-    def thread_func(self, item_num, number):
-        pitch = (number / item_num) * self.max_sound_pitch
-        sine_wave = SineWave(pitch=pitch, decibels=0, decibels_per_second=500)
+    def toggle_sound(self, toggle=None):
+        self.sound_on = toggle if toggle is not None else not self.sound_on
+        self.change_volume()
+
+    def change_volume(self, volume=None):
+        if self.sound_on:
+            volume = volume if volume is not None else self.decibels_lower_limit
+            self.sine_wave.set_volume(volume)
+
+    def change_pitch(self, pitch):
+        self.sine_wave.set_pitch(pitch)

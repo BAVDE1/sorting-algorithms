@@ -89,6 +89,9 @@ class Sorter:
         if not self.completed:
             self.started = True
             self.completed = False
+            self.sound_manager.change_volume(self.sound_manager.decibels_default)
+
+            # start from scratch
             if (not self.started and self.frame_num != 0) or self.completed:
                 self.frames_since_op = self.frames_per_op
                 self.frame_num = 0
@@ -98,12 +101,12 @@ class Sorter:
         if self.started and not self.completed:
             self.started = False
             self.game.stop_sorting()
+            self.sound_manager.change_volume()
 
     def complete_sorting(self):
         if self.started and not self.completed:
-            self.started = False
+            self.stop_sorting()
             self.completed = True
-            self.game.stop_sorting()
             self.render(self.sorter_screen, True)  # re-render
 
     def is_sorted_complete(self, li=None):
@@ -150,8 +153,8 @@ class Sorter:
         self.sound_manager.toggle_sound()
 
     def play_sound(self, number):
-        pass
-        # self.sound_manager.try_play_sound()
+        pitch = ((number / self.item_num) * self.sound_manager.pitch_upper_limit) - 10
+        self.sound_manager.change_pitch(pitch)
 
     def render_text(self, screen: pg.Surface):
         col = Colours.GREY
@@ -298,7 +301,7 @@ class InsertionSort(MethodSorter):
             self.up_to_column += 1
             self.looking_at = self.up_to_column + 1
         else:
-            self.sorter.swap_items(self.looking_at - 1, self.looking_at, play_sound=bool(self.looking_at % 2), sound_b=True)
+            self.sorter.swap_items(self.looking_at - 1, self.looking_at, sound_b=True)
             self.looking_at -= 1
 
         self.sorter.is_sorted_complete()
@@ -325,7 +328,7 @@ class CocktailSort(MethodSorter):
         # swap
         a, b = self.looking_at, self.looking_at + asc_int
         if (self.ascending and self.sorter.items[a] > self.sorter.items[b]) or (not self.ascending and self.sorter.items[a] < self.sorter.items[b]):
-            self.sorter.swap_items(a, b, play_sound=bool(b % 2))
+            self.sorter.swap_items(a, b)
         self.looking_at += asc_int
 
         # switch directions
