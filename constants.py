@@ -8,7 +8,6 @@ class SortingMethods:
     BUBBLE = "Bubble"
     COMB = "Comb"
     INSERTION = "Insertion"
-    SHELL = "Shell"
     COCKTAIL = "Cocktail Shaker"
     MERGE = "Merge"
     SIMPLE_QUICK = "(Simple) Quick"
@@ -44,7 +43,7 @@ class GameValues:
 
     MAX_ITEMS = 540
     MAX_FRAMES = 100
-    MAX_MARGIN = 100
+    MAX_MARGIN = 200
 
     SCREEN_WIDTH = 800
     SCREEN_HEIGHT = 800

@@ -50,12 +50,11 @@ def get_collection(game, sorter: Sorter) -> Collection:
         Button(SortingMethods.BUBBLE, pg.Vector2(5, 5), BTNOperation(function=sorter.change_sorting_method, method=SortingMethods.BUBBLE), colour=col, text_size=size),
         Button(SortingMethods.COMB, pg.Vector2(5, 35), BTNOperation(function=sorter.change_sorting_method, method=SortingMethods.COMB), colour=col, text_size=size),
         Button(SortingMethods.INSERTION, pg.Vector2(5, 65), BTNOperation(function=sorter.change_sorting_method, method=SortingMethods.INSERTION), colour=col, text_size=size),
-        Button(SortingMethods.SHELL, pg.Vector2(5, 95), BTNOperation(function=sorter.change_sorting_method, method=SortingMethods.SHELL), colour=col, text_size=size),
-        Button(SortingMethods.COCKTAIL, pg.Vector2(5, 125), BTNOperation(function=sorter.change_sorting_method, method=SortingMethods.COCKTAIL), colour=col, text_size=size),
-        Button(SortingMethods.MERGE, pg.Vector2(5, 155), BTNOperation(function=sorter.change_sorting_method, method=SortingMethods.MERGE), colour=col, text_size=size),
-        Button(SortingMethods.SIMPLE_QUICK, pg.Vector2(5, 185), BTNOperation(function=sorter.change_sorting_method, method=SortingMethods.SIMPLE_QUICK), colour=col, text_size=size),
-        Button(SortingMethods.HEAP, pg.Vector2(5, 215), BTNOperation(function=sorter.change_sorting_method, method=SortingMethods.HEAP), colour=col, text_size=size),
-        Button(SortingMethods.RADIX, pg.Vector2(5, 275), BTNOperation(function=sorter.change_sorting_method, method=SortingMethods.RADIX), colour=col, text_size=size)
+        Button(SortingMethods.COCKTAIL, pg.Vector2(5, 95), BTNOperation(function=sorter.change_sorting_method, method=SortingMethods.COCKTAIL), colour=col, text_size=size),
+        Button(SortingMethods.MERGE, pg.Vector2(5, 125), BTNOperation(function=sorter.change_sorting_method, method=SortingMethods.MERGE), colour=col, text_size=size),
+        Button(SortingMethods.SIMPLE_QUICK, pg.Vector2(5, 155), BTNOperation(function=sorter.change_sorting_method, method=SortingMethods.SIMPLE_QUICK), colour=col, text_size=size),
+        Button(SortingMethods.HEAP, pg.Vector2(5, 185), BTNOperation(function=sorter.change_sorting_method, method=SortingMethods.HEAP), colour=col, text_size=size),
+        Button(SortingMethods.RADIX, pg.Vector2(5, 245), BTNOperation(function=sorter.change_sorting_method, method=SortingMethods.RADIX), colour=col, text_size=size)
     ])
     return method_collection
 

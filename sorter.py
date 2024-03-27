@@ -41,7 +41,6 @@ class Sorter:
             SortingMethods.BUBBLE: BubbleSorter,
             SortingMethods.COMB: CombSort,
             SortingMethods.INSERTION: InsertionSort,
-            SortingMethods.SHELL: ShellSort,
             SortingMethods.COCKTAIL: CocktailSort,
             SortingMethods.MERGE: MergeSort,
             SortingMethods.SIMPLE_QUICK: SimpleQuickSort,
@@ -75,6 +74,9 @@ class Sorter:
 
     def change_margin(self, new_val):
         self.margin = new_val
+        self.sorter_screen.fill(Colours.BG_COL)
+        self.previous_screen.fill(Colours.BG_COL)
+        self.render(self.sorter_screen, re_render_all=True)
 
     def change_sorting_method(self, method: SortingMethods):
         if not self.started:
@@ -305,15 +307,6 @@ class InsertionSort(MethodSorter):
             self.looking_at -= 1
 
         self.sorter.is_sorted_complete()
-
-
-class ShellSort(MethodSorter):
-    def __init__(self, *args):
-        super().__init__(*args)
-        self.gap = math.ceil(self.sorter.item_num / 2)
-
-    def advance(self):
-        pass
 
 
 class CocktailSort(MethodSorter):
