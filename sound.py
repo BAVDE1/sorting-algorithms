@@ -7,7 +7,7 @@ class SoundManager:
 
         self.pitch_upper_limit = 20
         self.decibels_default = 20
-        self.decibels_lower_limit = -150
+        self.decibels_lower_limit = -200
 
         self.sine_wave = SineWave(pitch=0, decibels=self.decibels_lower_limit, decibels_per_second=1000, pitch_per_second=1000)
 

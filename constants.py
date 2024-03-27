@@ -25,7 +25,7 @@ class Texts:
     MARGIN = "Margin"
     SORTING_METHOD = "Sorting Method:"
     SORT = "Sort"
-    SOUND = "Play sound"
+    SOUND = "Toggle sound"
 
     FRAMES = "frames"
     SINCE_OP = "since op"
@@ -51,7 +51,7 @@ class GameValues:
 
 
 class Colours:
-    BG_COL = (0, 5, 5)
+    BG_COL = (0, 10, 10)
     WHITE = (255, 255, 255)
     GREEN = (100, 255, 100)
     RED = (255, 100, 100)

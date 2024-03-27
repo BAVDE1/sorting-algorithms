@@ -501,7 +501,7 @@ class HeapSort(MethodSorter):
         if not self.sifted:
             self.sift_down()
         else:
-            self.sorter.swap_items(0, self.heap_size, sound_b=True)
+            self.sorter.swap_items(0, self.heap_size, play_sound=self.generated_heap, sound_b=True)
             self.heap_size -= 1
         self.sifted = not self.sifted
 

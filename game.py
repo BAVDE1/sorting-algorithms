@@ -28,7 +28,7 @@ def get_buttons(game, sorter: Sorter):
     stop = Button(Texts.STOP, pg.Vector2(GameValues.SCREEN_WIDTH - 140, GameValues.SCREEN_HEIGHT - 80),
                   BTNOperation(sorter.stop_sorting), colour=(255, 100, 100), outline=2, hidden=True)
     re_gen = Button(Texts.RE_GEN, pg.Vector2(GameValues.SCREEN_HEIGHT - 230, GameValues.SCREEN_HEIGHT - 80), BTNOperation(sorter.generate_items), text_size=20, outline=2)
-    sound = ButtonToggle(Texts.SOUND, pg.Vector2(10, GameValues.SCREEN_HEIGHT - 50), BTNOperation(sorter.toggle_sound), text_size=18)
+    sound = ButtonToggle(Texts.SOUND, pg.Vector2(5, GameValues.SCREEN_HEIGHT - 40), BTNOperation(sorter.toggle_sound), text_size=18)
     return [start, stop, re_gen, sound]
 
 
